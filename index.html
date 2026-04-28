@@ -1,0 +1,2500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DEMAND RADAR v2 — Internet Business Intelligence</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+:root{
+  --void:#03050c;--deep:#070b14;--layer:#0b1122;--plate:#0f1830;
+  --rim:#192338;--rim2:#1f2d48;--rim3:#263558;
+  --hot:#ff3500;--hot2:#ff6030;--lime:#a8ff00;--ice:#00ccff;
+  --violet:#6c1fff;--gold:#ffcc00;--pink:#ff2d8a;
+  --text:#dde8ff;--text2:#8ba8cc;--muted:#3d5a7a;--faint:#111e35;
+  --fd:'Bebas Neue',sans-serif;--fb:'Outfit',sans-serif;--fm:'IBM Plex Mono',monospace;
+  --sidebar-w:220px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:14px;}
+body{background:var(--void);color:var(--text);font-family:var(--fb);min-height:100vh;display:flex;flex-direction:column;overflow:hidden;height:100vh;}
+::-webkit-scrollbar{width:3px;height:3px;}::-webkit-scrollbar-thumb{background:var(--rim2);}
+
+/* ── GRAIN TEXTURE ── */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5;}
+
+/* ══ ANIMATIONS ══ */
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
+@keyframes sweep{from{background-position:100%}to{background-position:-100%}}
+@keyframes card-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fade-in{from{opacity:0}to{opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bar-grow{from{width:0}to{width:var(--w,0%)}}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 0 rgba(255,53,0,0);}50%{box-shadow:0 0 20px rgba(255,53,0,.3);}}
+
+/* ══ HEADER ══ */
+.hdr{height:52px;min-height:52px;display:flex;align-items:center;padding:0 20px;gap:16px;background:rgba(3,5,12,.95);border-bottom:1px solid var(--rim);position:sticky;top:0;z-index:800;backdrop-filter:blur(20px);}
+.logo{font-family:var(--fd);font-size:1.5rem;letter-spacing:5px;color:var(--hot);text-shadow:0 0 28px rgba(255,53,0,.4);cursor:pointer;flex-shrink:0;}
+.logo span{color:var(--text2);}
+.logo-sub{font-family:var(--fm);font-size:.52rem;letter-spacing:3px;color:var(--muted);display:none;}
+.hdr-center{flex:1;display:flex;align-items:center;gap:10px;}
+.hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto;}
+.live-pill{display:flex;align-items:center;gap:5px;padding:3px 10px;border:1px solid var(--lime);font-family:var(--fm);font-size:.55rem;letter-spacing:2px;color:var(--lime);}
+.live-d{width:5px;height:5px;border-radius:50%;background:var(--lime);animation:pulse-dot 1.4s infinite;}
+.clk{font-family:var(--fm);font-size:.62rem;color:var(--muted);letter-spacing:1px;}
+.icon-btn{width:30px;height:30px;border:1px solid var(--rim);background:transparent;cursor:pointer;color:var(--muted);font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.icon-btn:hover{border-color:var(--hot);color:var(--hot);}
+.mode-btn{font-family:var(--fm);font-size:.6rem;padding:4px 10px;border:1px solid var(--rim2);color:var(--muted);background:transparent;cursor:pointer;letter-spacing:1px;transition:all .15s;}
+.mode-btn:hover,.mode-btn.on{border-color:var(--ice);color:var(--ice);}
+
+/* ══ TABS ══ */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rim);background:var(--deep);flex-shrink:0;}
+.tab{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;padding:11px 18px;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;text-transform:uppercase;white-space:nowrap;}
+.tab:hover{color:var(--text2);}
+.tab.active{color:var(--hot);border-bottom-color:var(--hot);}
+.tab-badge{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;background:var(--hot);color:#fff;font-size:.5rem;border-radius:50%;margin-left:5px;}
+
+/* ══ SCAN BAR ══ */
+.scan-bar{padding:14px 20px;background:var(--deep);border-bottom:1px solid var(--rim);flex-shrink:0;}
+.scan-row{display:flex;gap:8px;margin-bottom:10px;align-items:stretch;}
+.si-wrap{flex:1;position:relative;}
+.si-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;}
+.scan-input{width:100%;background:var(--layer);border:1px solid var(--rim);color:var(--text);font-family:var(--fm);font-size:.78rem;padding:11px 14px 11px 36px;outline:none;transition:border-color .2s,box-shadow .2s;letter-spacing:.3px;}
+.scan-input:focus{border-color:var(--hot);box-shadow:0 0 0 3px rgba(255,53,0,.1);}
+.scan-input::placeholder{color:var(--muted);}
+.btn{font-family:var(--fm);font-size:.65rem;letter-spacing:2px;padding:0 18px;border:1px solid;cursor:pointer;background:transparent;transition:all .18s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;text-transform:uppercase;height:100%;}
+.btn-fire{border-color:var(--hot);color:var(--hot);}
+.btn-fire:hover{background:var(--hot);color:var(--void);box-shadow:0 0 20px rgba(255,53,0,.35);}
+.btn-ice{border-color:var(--ice);color:var(--ice);}
+.btn-ice:hover{background:var(--ice);color:var(--void);}
+.btn-lime{border-color:var(--lime);color:var(--lime);}
+.btn-lime:hover{background:var(--lime);color:var(--void);}
+.btn-ghost{border-color:var(--rim2);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--muted);color:var(--text);}
+.btn-sm{padding:5px 12px;font-size:.58rem;height:auto;}
+.sweep{height:2px;background:linear-gradient(90deg,transparent,var(--hot),transparent);background-size:200%;animation:sweep 1.1s linear infinite;display:none;}
+.sweep.on{display:block;}
+
+/* Chips row */
+.chips-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+.chip{display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid var(--rim);font-family:var(--fm);font-size:.56rem;letter-spacing:1px;cursor:pointer;transition:all .15s;color:var(--muted);background:transparent;text-transform:uppercase;}
+.chip:hover,.chip.on{border-color:currentColor;opacity:1;}
+.chip.on{font-weight:600;}
+.chip-d{width:4px;height:4px;border-radius:50%;background:currentColor;}
+/* Sort/search row */
+.toolbar{display:flex;gap:8px;align-items:center;padding:8px 20px;border-bottom:1px solid var(--rim);background:var(--void);flex-shrink:0;}
+.search-mini{background:var(--layer);border:1px solid var(--rim);color:var(--text);font-family:var(--fm);font-size:.65rem;padding:6px 10px;outline:none;width:200px;transition:border-color .2s;}
+.search-mini:focus{border-color:var(--ice);}
+.search-mini::placeholder{color:var(--muted);}
+.sort-sel{background:var(--layer);border:1px solid var(--rim);color:var(--text2);font-family:var(--fm);font-size:.6rem;padding:6px 8px;outline:none;cursor:pointer;}
+.auto-label{font-family:var(--fm);font-size:.58rem;color:var(--muted);letter-spacing:1px;}
+.auto-btn{font-family:var(--fm);font-size:.58rem;padding:5px 10px;border:1px solid var(--rim2);color:var(--muted);background:transparent;cursor:pointer;transition:all .15s;letter-spacing:1px;}
+.auto-btn.on,.auto-btn:hover{border-color:var(--gold);color:var(--gold);}
+.countdown{font-family:var(--fm);font-size:.6rem;color:var(--gold);}
+
+/* ══ BODY GRID ══ */
+.body{display:flex;flex:1;overflow:hidden;}
+
+/* ══ VIEWS ══ */
+.view{display:none;width:100%;height:100%;overflow:hidden;}
+.view.active{display:flex;}
+
+/* ══ DISCOVER VIEW ══ */
+.discover{display:flex;width:100%;height:100%;overflow:hidden;}
+
+/* Left feed */
+.feed-col{width:360px;min-width:360px;border-right:1px solid var(--rim);display:flex;flex-direction:column;overflow:hidden;background:var(--deep);}
+.feed-hdr{padding:12px 16px;border-bottom:1px solid var(--rim);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.feed-title{font-family:var(--fm);font-size:.58rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;}
+.cnt-badge{font-family:var(--fm);font-size:.55rem;padding:2px 7px;border:1px solid;letter-spacing:1px;}
+.badge-fire{border-color:var(--hot);color:var(--hot);}
+.badge-lime{border-color:var(--lime);color:var(--lime);}
+/* Heatmap mini */
+.heatmap-strip{padding:10px 16px;border-bottom:1px solid var(--rim);flex-shrink:0;}
+.hm-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.hm-cell{height:22px;border:1px solid var(--rim);transition:background .4s;cursor:pointer;position:relative;}
+.hm-cell:hover::after{content:attr(data-tip);position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--plate);border:1px solid var(--rim2);padding:3px 8px;font-family:var(--fm);font-size:.52rem;white-space:nowrap;z-index:50;color:var(--text2);}
+.hm-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:3px;}
+.hm-lbl{font-family:var(--fm);font-size:.45rem;letter-spacing:.5px;color:var(--muted);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.feed-list{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px;}
+
+/* Demand card */
+.dc{background:var(--layer);border:1px solid var(--rim);border-left:3px solid var(--ca,var(--rim));padding:11px 13px;cursor:pointer;transition:all .15s;animation:card-in .3s ease both;position:relative;}
+.dc:hover,.dc.sel{border-color:var(--ca,var(--hot));background:var(--plate);}
+.dc.sel{background:rgba(255,53,0,.05);}
+.dc.watched::after{content:'★';position:absolute;top:8px;right:8px;font-size:.75rem;color:var(--gold);}
+.dc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.dc-dom{font-family:var(--fm);font-size:.53rem;letter-spacing:2px;color:var(--ca,var(--muted));text-transform:uppercase;}
+.dc-trend{font-family:var(--fm);font-size:.52rem;display:flex;align-items:center;gap:3px;}
+.trend-up{color:var(--lime);}
+.trend-flat{color:var(--muted);}
+.trend-dn{color:var(--hot);}
+.dc-title{font-family:var(--fb);font-size:.8rem;font-weight:600;color:var(--text);line-height:1.4;margin-bottom:5px;padding-right:20px;}
+.dc-meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.lvl{font-family:var(--fm);font-size:.54rem;padding:2px 6px;border:1px solid;letter-spacing:1px;text-transform:uppercase;}
+.lvl-ex{border-color:var(--hot);color:var(--hot);background:rgba(255,53,0,.08);}
+.lvl-vh{border-color:var(--hot2);color:var(--hot2);background:rgba(255,96,48,.08);}
+.lvl-h{border-color:var(--gold);color:var(--gold);background:rgba(255,204,0,.08);}
+.lvl-m{border-color:var(--ice);color:var(--ice);background:rgba(0,204,255,.08);}
+.lvl-s{border-color:var(--muted);color:var(--muted);}
+/* Sparkline */
+.sparkline{display:flex;align-items:flex-end;gap:1px;height:18px;margin-top:5px;}
+.spark-bar{flex:1;min-width:2px;background:var(--ca,var(--muted));opacity:.6;transition:height .4s;}
+/* Watch button */
+.watch-btn{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:.8rem;transition:color .15s;padding:0;}
+.watch-btn:hover,.watch-btn.on{color:var(--gold);}
+/* Compare toggle */
+.compare-btn{position:absolute;bottom:8px;right:8px;background:none;border:none;cursor:pointer;color:var(--muted);font-family:var(--fm);font-size:.52rem;letter-spacing:1px;transition:color .15s;padding:0;}
+.compare-btn:hover,.compare-btn.on{color:var(--violet);}
+
+/* Right analysis */
+.analysis-col{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--void);}
+.analysis-hdr{padding:12px 22px;border-bottom:1px solid var(--rim);display:flex;align-items:center;gap:10px;background:var(--deep);flex-shrink:0;}
+.analysis-title{font-family:var(--fm);font-size:.58rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;flex:1;}
+.ai-badge{font-family:var(--fm);font-size:.54rem;letter-spacing:2px;padding:3px 8px;border:1px solid var(--violet);color:var(--violet);}
+.analysis-body{flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:10px;}
+
+/* Analysis blocks */
+.ab{background:var(--layer);border:1px solid var(--rim);padding:16px 18px;animation:rise .35s ease both;}
+.ab-title{font-family:var(--fm);font-size:.57rem;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+.ab-dot{width:5px;height:5px;border-radius:50%;background:var(--dot-c,var(--muted));box-shadow:0 0 7px var(--dot-c,transparent);}
+.ab-text{font-size:.76rem;line-height:1.78;color:var(--text);}
+.typing::after{content:'▋';animation:blink .65s infinite;color:var(--hot);}
+
+/* Demand gauges */
+.gauge-grid{display:flex;flex-direction:column;gap:7px;}
+.gauge-row{display:flex;align-items:center;gap:9px;}
+.gauge-lbl{font-family:var(--fm);font-size:.57rem;color:var(--muted);width:90px;flex-shrink:0;letter-spacing:.5px;}
+.gauge-track{flex:1;height:5px;background:var(--faint);position:relative;}
+.gauge-fill{height:100%;transition:width 1.1s cubic-bezier(.4,0,.2,1);position:relative;}
+.gauge-fill::after{content:'';position:absolute;right:0;top:-4px;width:12px;height:12px;border-radius:50%;background:inherit;box-shadow:0 0 8px currentColor;}
+.gauge-val{font-family:var(--fm);font-size:.62rem;color:var(--text);width:28px;text-align:right;flex-shrink:0;}
+
+/* Platform card */
+.plat-card{background:var(--plate);border:1px solid var(--rim);border-left:3px solid var(--pc,var(--ice));padding:14px 16px;animation:rise .4s ease both;transition:all .15s;cursor:pointer;}
+.plat-card:hover{border-color:var(--pc,var(--ice));background:rgba(0,204,255,.04);}
+.plat-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.plat-name{font-family:var(--fb);font-size:.85rem;font-weight:700;color:var(--text);}
+.plat-type{font-family:var(--fm);font-size:.52rem;letter-spacing:1.5px;color:var(--pc,var(--ice));border:1px solid var(--pc,var(--ice));padding:2px 6px;}
+.plat-desc{font-size:.74rem;line-height:1.65;color:#7a9cb8;margin-bottom:9px;}
+.stack-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;}
+.stag{font-family:var(--fm);font-size:.52rem;padding:2px 6px;background:var(--faint);border:1px solid var(--rim);color:var(--muted);}
+.plat-foot{display:flex;align-items:center;gap:14px;padding-top:8px;border-top:1px solid var(--rim);flex-wrap:wrap;}
+.plat-metric{text-align:left;}
+.pm-lbl{font-family:var(--fm);font-size:.52rem;color:var(--muted);letter-spacing:1px;margin-bottom:2px;}
+.pm-val{font-family:var(--fb);font-size:.75rem;font-weight:700;}
+.diff-dots{display:flex;gap:2px;}
+.dd{width:6px;height:6px;border-radius:50%;background:var(--rim);}
+.dd.on{background:var(--gold);}
+
+/* TAM/SAM/SOM */
+.market-bars{display:flex;flex-direction:column;gap:8px;}
+.market-row{display:flex;align-items:center;gap:10px;}
+.market-lbl{font-family:var(--fm);font-size:.57rem;color:var(--muted);width:40px;flex-shrink:0;}
+.market-track{flex:1;height:10px;background:var(--faint);position:relative;}
+.market-fill{height:100%;animation:bar-grow .9s ease both;}
+.market-amount{font-family:var(--fd);font-size:1rem;letter-spacing:1px;width:70px;text-align:right;flex-shrink:0;}
+
+/* Barrier radar */
+.barrier-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.barrier-item{padding:10px 12px;background:var(--faint);border:1px solid var(--rim);}
+.barrier-name{font-family:var(--fm);font-size:.56rem;color:var(--muted);letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;}
+.barrier-bar{height:4px;background:var(--rim);margin-bottom:4px;}
+.barrier-fill{height:100%;transition:width .9s ease;}
+.barrier-val{font-family:var(--fm);font-size:.6rem;color:var(--text2);}
+
+/* Revenue calculator */
+.calc-grid{display:flex;flex-direction:column;gap:10px;}
+.calc-row{display:flex;align-items:center;gap:10px;}
+.calc-lbl{font-family:var(--fm);font-size:.6rem;color:var(--muted);width:120px;flex-shrink:0;}
+.calc-slider{flex:1;-webkit-appearance:none;height:4px;background:var(--rim);outline:none;cursor:pointer;}
+.calc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--hot);cursor:pointer;box-shadow:0 0 8px rgba(255,53,0,.5);}
+.calc-val{font-family:var(--fm);font-size:.65rem;color:var(--text);width:60px;text-align:right;flex-shrink:0;}
+.calc-result{background:rgba(168,255,0,.06);border:1px solid rgba(168,255,0,.3);padding:14px;text-align:center;margin-top:6px;}
+.calc-mrr{font-family:var(--fd);font-size:2.2rem;letter-spacing:2px;color:var(--lime);line-height:1;}
+.calc-sub{font-family:var(--fm);font-size:.58rem;color:var(--muted);margin-top:4px;letter-spacing:2px;}
+
+/* Build roadmap */
+.roadmap{display:flex;flex-direction:column;gap:0;}
+.rm-week{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--rim);animation:rise .4s ease both;}
+.rm-week:last-child{border-bottom:none;}
+.rm-num{font-family:var(--fd);font-size:1.1rem;letter-spacing:1px;color:var(--hot);width:60px;flex-shrink:0;line-height:1.2;}
+.rm-content{flex:1;}
+.rm-title{font-size:.76rem;font-weight:600;color:var(--text);margin-bottom:3px;}
+.rm-tasks{font-size:.68rem;color:var(--text2);line-height:1.6;}
+.rm-tag{display:inline-block;padding:1px 6px;border:1px solid var(--rim);font-family:var(--fm);font-size:.5rem;margin-left:6px;color:var(--muted);}
+
+/* Competitor list */
+.comp-list{display:flex;flex-direction:column;gap:7px;}
+.comp-item{display:flex;align-items:center;gap:12px;padding:9px 12px;background:var(--faint);border:1px solid var(--rim);}
+.comp-name{font-weight:600;font-size:.76rem;flex:1;}
+.comp-funding{font-family:var(--fm);font-size:.6rem;color:var(--gold);}
+.comp-density{font-family:var(--fm);font-size:.58rem;padding:2px 6px;border:1px solid;letter-spacing:1px;}
+.dens-low{border-color:var(--lime);color:var(--lime);}
+.dens-med{border-color:var(--gold);color:var(--gold);}
+.dens-high{border-color:var(--hot);color:var(--hot);}
+
+/* GTM section */
+.gtm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.gtm-card{padding:12px;background:var(--faint);border:1px solid var(--rim);}
+.gtm-label{font-family:var(--fm);font-size:.55rem;letter-spacing:2px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;}
+.gtm-value{font-size:.74rem;color:var(--text);line-height:1.5;}
+
+/* Notes */
+.note-box{width:100%;background:var(--layer);border:1px solid var(--rim);color:var(--text);font-family:var(--fm);font-size:.68rem;padding:10px 12px;outline:none;resize:vertical;min-height:70px;transition:border-color .2s;line-height:1.6;}
+.note-box:focus{border-color:var(--ice);}
+
+/* ══ WATCHLIST VIEW ══ */
+.watchlist-view{flex-direction:column;padding:20px;overflow-y:auto;background:var(--void);}
+.wl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:14px;}
+.wl-card{background:var(--layer);border:1px solid var(--rim);border-left:3px solid var(--ca,var(--gold));padding:16px;cursor:pointer;transition:all .15s;}
+.wl-card:hover{border-color:var(--gold);background:var(--plate);}
+.wl-card-title{font-weight:600;font-size:.82rem;margin-bottom:6px;}
+.wl-card-meta{font-family:var(--fm);font-size:.58rem;color:var(--muted);}
+
+/* ══ COMPARE VIEW ══ */
+.compare-view{flex-direction:column;padding:20px;overflow-y:auto;background:var(--void);}
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+.compare-col{display:flex;flex-direction:column;gap:10px;}
+.compare-hdr{font-family:var(--fd);font-size:1.1rem;letter-spacing:2px;color:var(--text);margin-bottom:4px;}
+.compare-domain{font-family:var(--fm);font-size:.58rem;color:var(--muted);}
+.compare-metric{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--layer);border:1px solid var(--rim);}
+.cm-lbl{font-family:var(--fm);font-size:.6rem;color:var(--muted);letter-spacing:1px;}
+.cm-val{font-family:var(--fb);font-weight:700;font-size:.8rem;}
+.compare-winner{color:var(--lime);}
+.compare-loser{color:var(--text2);}
+
+/* ══ HISTORY VIEW ══ */
+.history-view{flex-direction:column;padding:20px;overflow-y:auto;}
+.hist-list{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.hist-item{background:var(--layer);border:1px solid var(--rim);padding:14px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s;}
+.hist-item:hover{border-color:var(--ice);}
+.hist-time{font-family:var(--fm);font-size:.6rem;color:var(--muted);min-width:80px;}
+.hist-topic{font-weight:600;font-size:.82rem;flex:1;}
+.hist-meta{font-family:var(--fm);font-size:.58rem;color:var(--muted);}
+
+/* ══ BUILDER VIEW ══ */
+.builder-view{flex-direction:column;padding:20px;overflow-y:auto;}
+.builder-form{background:var(--layer);border:1px solid var(--rim);padding:20px;max-width:600px;margin-bottom:14px;}
+.bf-label{font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:var(--muted);margin-bottom:6px;display:block;text-transform:uppercase;}
+.bf-input{width:100%;background:var(--plate);border:1px solid var(--rim);color:var(--text);font-family:var(--fm);font-size:.72rem;padding:9px 12px;outline:none;margin-bottom:12px;transition:border-color .2s;}
+.bf-input:focus{border-color:var(--hot);}
+.bf-select{width:100%;background:var(--plate);border:1px solid var(--rim);color:var(--text2);font-family:var(--fm);font-size:.68rem;padding:9px 12px;outline:none;cursor:pointer;margin-bottom:12px;}
+.roadmap-output{margin-top:14px;}
+
+/* ══ STATS BAR ══ */
+.stats-bar{border-top:1px solid var(--rim);display:grid;grid-template-columns:repeat(8,1fr);background:var(--deep);flex-shrink:0;}
+.stat-cell{padding:8px 12px;border-right:1px solid var(--rim);text-align:center;}
+.stat-cell:last-child{border-right:none;}
+.sv{font-family:var(--fd);font-size:1.25rem;letter-spacing:1px;color:var(--sc,var(--ice));line-height:1;}
+.sl{font-family:var(--fm);font-size:.48rem;letter-spacing:2px;color:var(--muted);margin-top:2px;text-transform:uppercase;}
+
+/* ══ MODAL ══ */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.87);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--layer);border:1px solid var(--rim2);padding:26px;max-width:580px;width:100%;max-height:85vh;overflow-y:auto;position:relative;animation:rise .2s ease;}
+.modal-title{font-family:var(--fd);font-size:1.25rem;letter-spacing:3px;color:var(--text);margin-bottom:16px;padding-right:24px;}
+.modal-close{position:absolute;top:14px;right:14px;cursor:pointer;color:var(--muted);background:none;border:none;font-size:1rem;transition:color .15s;}
+.modal-close:hover{color:var(--hot);}
+
+/* ══ EMPTY / PLACEHOLDER ══ */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:48px 24px;text-align:center;opacity:.35;}
+.e-ico{font-size:2.2rem;}
+.e-title{font-family:var(--fm);font-size:.68rem;letter-spacing:2px;color:var(--muted);}
+.e-desc{font-size:.7rem;color:var(--muted);line-height:1.6;max-width:240px;}
+
+/* ══ TOAST ══ */
+.toasts{position:fixed;top:14px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:7px;}
+.toast{background:var(--layer);border:1px solid var(--rim2);padding:10px 14px;font-size:.7rem;min-width:220px;animation:rise .3s ease;display:flex;gap:9px;align-items:flex-start;border-left:3px solid var(--tc,var(--ice));}
+
+/* ══ PAGE HEADER ══ */
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:14px;flex-wrap:wrap;}
+.ph-title{font-family:var(--fd);font-size:1.4rem;letter-spacing:3px;color:var(--text);}
+.ph-sub{font-family:var(--fm);font-size:.58rem;color:var(--muted);margin-top:3px;letter-spacing:1px;}
+.ph-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+
+/* ══ SHORTCUT PANEL ══ */
+.shortcut-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.sc-row{display:flex;align-items:center;gap:8px;padding:6px 9px;background:var(--faint);}
+.kbd{padding:2px 6px;border:1px solid var(--rim2);background:var(--layer);font-family:var(--fm);font-size:.58rem;color:var(--text2);}
+.sc-desc{font-size:.67rem;color:var(--text2);flex:1;}
+
+/* ══ LIGHT MODE ══ */
+body.light{--void:#f0f4fa;--deep:#e8edf5;--layer:#ffffff;--plate:#f5f7fc;--rim:#d0d8ea;--rim2:#b8c4da;--rim3:#a0b0cc;--faint:#e4eaf5;--text:#1a2440;--text2:#4a5e7a;--muted:#8098b8;}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px){
+  .feed-col{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--rim);max-height:340px;}
+  .discover{flex-direction:column;}
+  .stats-bar{grid-template-columns:repeat(4,1fr);}
+  .compare-grid{grid-template-columns:1fr;}
+}
+@media(max-width:600px){
+  .logo-sub{display:block;}
+  .hdr-center .tagline{display:none;}
+  .stats-bar{grid-template-columns:repeat(2,1fr);}
+  .tabs .tab{padding:9px 10px;font-size:.55rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOASTS -->
+<div class="toasts" id="toasts"></div>
+
+<!-- SHORTCUTS MODAL -->
+<div class="modal-ov" id="shortcutsModal">
+  <div class="modal">
+    <div class="modal-title">KEYBOARD SHORTCUTS</div>
+    <button class="modal-close" onclick="closeModal('shortcutsModal')">✕</button>
+    <div class="shortcut-grid">
+      <div class="sc-row"><span class="kbd">S</span><span class="sc-desc">Run scan</span></div>
+      <div class="sc-row"><span class="kbd">C</span><span class="sc-desc">Clear results</span></div>
+      <div class="sc-row"><span class="kbd">W</span><span class="sc-desc">Watch selected signal</span></div>
+      <div class="sc-row"><span class="kbd">X</span><span class="sc-desc">Compare selected</span></div>
+      <div class="sc-row"><span class="kbd">E</span><span class="sc-desc">Export analysis</span></div>
+      <div class="sc-row"><span class="kbd">N</span><span class="sc-desc">Add note</span></div>
+      <div class="sc-row"><span class="kbd">1–5</span><span class="sc-desc">Switch tabs</span></div>
+      <div class="sc-row"><span class="kbd">D</span><span class="sc-desc">Dark/light mode</span></div>
+      <div class="sc-row"><span class="kbd">?</span><span class="sc-desc">Show shortcuts</span></div>
+      <div class="sc-row"><span class="kbd">ESC</span><span class="sc-desc">Close modal/clear</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM DETAIL MODAL -->
+<div class="modal-ov" id="platModal">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-title" id="platModalTitle">PLATFORM DETAIL</div>
+    <button class="modal-close" onclick="closeModal('platModal')">✕</button>
+    <div id="platModalBody"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="logo">DEMAND<span>RADAR</span></div>
+  <div style="font-family:var(--fm);font-size:.55rem;letter-spacing:3px;color:var(--muted);">INTERNET BUSINESS INTELLIGENCE v2</div>
+  <div class="hdr-right">
+    <div class="live-pill"><div class="live-d"></div>LIVE</div>
+    <div class="clk" id="clk">--:--:-- UTC</div>
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">☀</button>
+    <button class="icon-btn" onclick="openModal('shortcutsModal')" title="Shortcuts (?)">⌨</button>
+    <button class="btn btn-fire btn-sm" onclick="exportAnalysis()">⬇ EXPORT</button>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs" id="tabsBar">
+  <div class="tab active" data-tab="discover" onclick="switchTab('discover',this)">⌖ DISCOVER</div>
+  <div class="tab" data-tab="watchlist" onclick="switchTab('watchlist',this)">★ WATCHLIST <span class="tab-badge" id="wl-badge">0</span></div>
+  <div class="tab" data-tab="compare" onclick="switchTab('compare',this)">⟷ COMPARE <span class="tab-badge" id="cmp-badge" style="background:var(--violet);">0</span></div>
+  <div class="tab" data-tab="builder" onclick="switchTab('builder',this)">🏗 BUILDER</div>
+  <div class="tab" data-tab="history" onclick="switchTab('history',this)">⧗ HISTORY</div>
+</div>
+
+<!-- SCAN BAR -->
+<div class="scan-bar">
+  <div class="sweep" id="sweepBar"></div>
+  <div class="scan-row">
+    <div class="si-wrap">
+      <span class="si-ico">◉</span>
+      <input class="scan-input" id="scanInput" placeholder="Enter industry, market, keyword, or topic to scan for business demand…">
+    </div>
+    <button class="btn btn-fire" onclick="runScan()">⚡ SCAN DEMAND</button>
+    <button class="btn btn-ghost" onclick="clearAll()">✕ CLEAR</button>
+    <button class="btn btn-lime btn-sm" onclick="exportAnalysis()">⬇ EXPORT</button>
+  </div>
+  <div class="chips-row" id="chipsRow">
+    <span style="font-family:var(--fm);font-size:.55rem;color:var(--muted);letter-spacing:2px;">DOMAIN:</span>
+    <div class="chip on" style="color:var(--text2);" data-d="all" onclick="filterD('all',this)"><div class="chip-d"></div>ALL</div>
+    <div class="chip" style="color:#4f8ef7;" data-d="data" onclick="filterD('data',this)"><div class="chip-d"></div>DATA</div>
+    <div class="chip" style="color:#f59e0b;" data-d="decision" onclick="filterD('decision',this)"><div class="chip-d"></div>DECISION</div>
+    <div class="chip" style="color:#22c55e;" data-d="quality" onclick="filterD('quality',this)"><div class="chip-d"></div>QUALITY</div>
+    <div class="chip" style="color:#a855f7;" data-d="science" onclick="filterD('science',this)"><div class="chip-d"></div>SCIENCE</div>
+    <div class="chip" style="color:#ef4444;" data-d="engineering" onclick="filterD('engineering',this)"><div class="chip-d"></div>ENGINEERING</div>
+    <div class="chip" style="color:#00ccff;" data-d="tech" onclick="filterD('tech',this)"><div class="chip-d"></div>TECH</div>
+    <div class="chip" style="color:#f97316;" data-d="education" onclick="filterD('education',this)"><div class="chip-d"></div>EDUCATION</div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <input class="search-mini" id="searchMini" placeholder="Search signals…" oninput="renderFeed()">
+  <select class="sort-sel" id="sortSel" onchange="renderFeed()">
+    <option value="lvl">Sort: Demand Level</option>
+    <option value="mkt">Sort: Market Size</option>
+    <option value="diff">Sort: Easiest First</option>
+    <option value="rev">Sort: Revenue Potential</option>
+  </select>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:7px;">
+    <span class="auto-label">AUTO-RESCAN:</span>
+    <button class="auto-btn on" id="ar-off" onclick="setAutoRescan(0)">OFF</button>
+    <button class="auto-btn" id="ar-30" onclick="setAutoRescan(30)">30S</button>
+    <button class="auto-btn" id="ar-60" onclick="setAutoRescan(60)">1MIN</button>
+    <button class="auto-btn" id="ar-5m" onclick="setAutoRescan(300)">5MIN</button>
+    <span class="countdown" id="arCountdown"></span>
+    <label style="font-family:var(--fm);font-size:.58rem;color:var(--muted);display:flex;align-items:center;gap:5px;cursor:pointer;">
+      DEEP SCAN <div class="auto-btn" id="deepToggle" onclick="this.classList.toggle('on');this.style.borderColor=this.classList.contains('on')?'var(--violet)':'';this.style.color=this.classList.contains('on')?'var(--violet)':'';" style="padding:4px 8px;display:inline-block;">OFF</div>
+    </label>
+  </div>
+</div>
+
+<!-- BODY -->
+<div class="body" id="bodyArea">
+
+  <!-- ══ DISCOVER VIEW ══ -->
+  <div class="view active" id="view-discover">
+    <div class="discover">
+      <div class="feed-col">
+        <div class="feed-hdr">
+          <div class="feed-title">▸ Demand Signals</div>
+          <div class="cnt-badge badge-fire" id="feedCount">0 SIGNALS</div>
+        </div>
+        <!-- Heatmap -->
+        <div class="heatmap-strip" id="heatmapStrip">
+          <div style="font-family:var(--fm);font-size:.52rem;letter-spacing:2px;color:var(--muted);margin-bottom:6px;">DEMAND HEATMAP</div>
+          <div class="hm-grid" id="heatmapGrid"></div>
+          <div class="hm-labels" id="heatmapLabels"></div>
+        </div>
+        <div class="feed-list" id="feedList">
+          <div class="empty"><div class="e-ico">◉</div><div class="e-title">AWAITING SCAN</div><div class="e-desc">Enter a market or keyword and scan to detect live business demand signals.</div></div>
+        </div>
+      </div>
+
+      <div class="analysis-col">
+        <div class="analysis-hdr">
+          <div class="analysis-title">▸ Analysis + Platform Recommendations</div>
+          <div class="ai-badge" id="aiBadge">READY</div>
+          <button class="btn btn-ghost btn-sm" id="watchBtn" onclick="watchCurrent()" style="display:none;">★ WATCH</button>
+          <button class="btn btn-ghost btn-sm" id="compareBtn" onclick="compareCurrent()" style="display:none;">⟷ COMPARE</button>
+          <button class="btn btn-ghost btn-sm" id="noteBtn" onclick="focusNote()" style="display:none;">✎ NOTE</button>
+        </div>
+        <div class="analysis-body" id="analysisBody">
+          <div class="empty" id="analysisPlaceholder">
+            <div class="e-ico">⌖</div>
+            <div class="e-title">SELECT A SIGNAL</div>
+            <div class="e-desc">Click any demand signal to see AI analysis, market data, and platform recommendations.</div>
+          </div>
+          <div id="analysisContent" style="display:none;"></div>
+
+          <!-- REVENUE CALCULATOR (shown after selection) -->
+          <div id="calcSection" style="display:none;">
+            <div class="ab" style="--dot-c:var(--lime)">
+              <div class="ab-title"><div class="ab-dot"></div>REVENUE CALCULATOR</div>
+              <div class="calc-grid">
+                <div class="calc-row">
+                  <span class="calc-lbl">CUSTOMERS</span>
+                  <input type="range" class="calc-slider" id="calcCustomers" min="1" max="500" value="50" oninput="calcMRR()">
+                  <span class="calc-val" id="calcCustomersVal">50</span>
+                </div>
+                <div class="calc-row">
+                  <span class="calc-lbl">PRICE / MONTH ($)</span>
+                  <input type="range" class="calc-slider" id="calcPrice" min="10" max="2000" value="299" step="10" oninput="calcMRR()">
+                  <span class="calc-val" id="calcPriceVal">$299</span>
+                </div>
+                <div class="calc-row">
+                  <span class="calc-lbl">MONTHLY CHURN (%)</span>
+                  <input type="range" class="calc-slider" id="calcChurn" min="1" max="20" value="5" oninput="calcMRR()">
+                  <span class="calc-val" id="calcChurnVal">5%</span>
+                </div>
+              </div>
+              <div class="calc-result">
+                <div class="calc-mrr" id="calcMRR">$14,250</div>
+                <div class="calc-sub">PROJECTED MRR · <span id="calcARR">$171K ARR</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- NOTES SECTION -->
+          <div id="noteSection" style="display:none;">
+            <div class="ab">
+              <div class="ab-title"><div class="ab-dot" style="--dot-c:var(--ice);"></div>YOUR NOTES</div>
+              <textarea class="note-box" id="noteBox" placeholder="Add your notes, ideas, or action items for this demand signal…" oninput="saveNote()"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ WATCHLIST VIEW ══ -->
+  <div class="view" id="view-watchlist">
+    <div class="watchlist-view">
+      <div class="ph">
+        <div><div class="ph-title">WATCHLIST</div><div class="ph-sub">SAVED HIGH-INTEREST DEMAND SIGNALS</div></div>
+        <div class="ph-actions">
+          <button class="btn btn-ghost btn-sm" onclick="clearWatchlist()">✕ CLEAR ALL</button>
+        </div>
+      </div>
+      <div class="wl-grid" id="wlGrid">
+        <div class="empty"><div class="e-ico">★</div><div class="e-title">NO SIGNALS WATCHED</div><div class="e-desc">Click ★ on any demand signal to add it to your watchlist.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COMPARE VIEW ══ -->
+  <div class="view" id="view-compare">
+    <div class="compare-view">
+      <div class="ph">
+        <div><div class="ph-title">COMPARE SIGNALS</div><div class="ph-sub">SIDE-BY-SIDE OPPORTUNITY ANALYSIS</div></div>
+        <div class="ph-actions">
+          <button class="btn btn-ghost btn-sm" onclick="clearCompare()">✕ CLEAR COMPARE</button>
+        </div>
+      </div>
+      <div id="compareContent">
+        <div class="empty"><div class="e-ico">⟷</div><div class="e-title">NOTHING TO COMPARE</div><div class="e-desc">Click ⟷ on two demand signals to compare them side by side.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BUILDER VIEW ══ -->
+  <div class="view" id="view-builder">
+    <div class="builder-view">
+      <div class="ph">
+        <div><div class="ph-title">PLATFORM BUILDER</div><div class="ph-sub">AI-GENERATED BUILD PLAN FOR YOUR CHOSEN MARKET</div></div>
+      </div>
+      <div class="builder-form">
+        <label class="bf-label">WHAT DO YOU WANT TO BUILD?</label>
+        <input class="bf-input" id="bfIdea" placeholder="e.g. SaaS for dental clinics, AI tool for construction managers…">
+        <label class="bf-label">YOUR TECHNICAL BACKGROUND</label>
+        <select class="bf-select" id="bfLevel">
+          <option value="nocode">No-code / Low-code</option>
+          <option value="junior">Junior developer</option>
+          <option value="mid" selected>Mid-level developer</option>
+          <option value="senior">Senior / Full-stack</option>
+          <option value="technical">Technical founder (CTO level)</option>
+        </select>
+        <label class="bf-label">TARGET MONETIZATION</label>
+        <select class="bf-select" id="bfMono">
+          <option value="saas">Monthly SaaS subscription</option>
+          <option value="usage">Usage-based pricing</option>
+          <option value="freemium">Freemium → paid upgrade</option>
+          <option value="service">Service / consulting hybrid</option>
+          <option value="marketplace">Marketplace / commission</option>
+        </select>
+        <button class="btn btn-fire" onclick="generateRoadmap()">⚡ GENERATE 90-DAY ROADMAP</button>
+      </div>
+      <div class="roadmap-output" id="roadmapOutput"></div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY VIEW ══ -->
+  <div class="view" id="view-history">
+    <div class="history-view">
+      <div class="ph">
+        <div><div class="ph-title">SCAN HISTORY</div><div class="ph-sub">REPLAY ANY PREVIOUS INTELLIGENCE SESSION</div></div>
+        <div class="ph-actions"><button class="btn btn-ghost btn-sm" onclick="clearHistory()">✕ CLEAR</button></div>
+      </div>
+      <div class="hist-list" id="histList">
+        <div class="empty"><div class="e-ico">⧗</div><div class="e-title">NO HISTORY YET</div><div class="e-desc">Every scan is saved here so you can replay it.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /body -->
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-cell" style="--sc:var(--hot)"><div class="sv" id="s1">0</div><div class="sl">Scans</div></div>
+  <div class="stat-cell" style="--sc:var(--hot2)"><div class="sv" id="s2">0</div><div class="sl">Signals</div></div>
+  <div class="stat-cell" style="--sc:var(--gold)"><div class="sv" id="s3">0</div><div class="sl">Extreme Demand</div></div>
+  <div class="stat-cell" style="--sc:var(--lime)"><div class="sv" id="s4">0</div><div class="sl">Platforms Found</div></div>
+  <div class="stat-cell" style="--sc:var(--ice)"><div class="sv" id="s5">$0</div><div class="sl">Avg Market Size</div></div>
+  <div class="stat-cell" style="--sc:var(--violet)"><div class="sv" id="s6">0</div><div class="sl">Watched</div></div>
+  <div class="stat-cell" style="--sc:var(--pink)"><div class="sv" id="s7">0</div><div class="sl">Compared</div></div>
+  <div class="stat-cell" style="--sc:var(--muted)"><div class="sv" id="s8">0</div><div class="sl">AI Queries</div></div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// DATA MODEL
+// ══════════════════════════════════════
+const DOMAINS={
+  data:{label:'Data Analysis',icon:'📊',color:'#4f8ef7',abbr:'DATA',baseLevel:'VERY HIGH',basePct:94},
+  decision:{label:'Decision Making',icon:'🧠',color:'#f59e0b',abbr:'DEC',baseLevel:'HIGH',basePct:78},
+  quality:{label:'Quality Control',icon:'🔬',color:'#22c55e',abbr:'QA',baseLevel:'HIGH',basePct:81},
+  science:{label:'Scientific Research',icon:'⚗️',color:'#a855f7',abbr:'SCI',baseLevel:'MEDIUM',basePct:62},
+  engineering:{label:'Engineering',icon:'⚙️',color:'#ef4444',abbr:'ENG',baseLevel:'VERY HIGH',basePct:91},
+  tech:{label:'Technology Dev',icon:'💻',color:'#00ccff',abbr:'TECH',baseLevel:'EXTREMELY HIGH',basePct:98},
+  education:{label:'Education',icon:'🎓',color:'#f97316',abbr:'EDU',baseLevel:'STEADY',basePct:58}
+};
+const LVL_O={'EXTREMELY HIGH':0,'VERY HIGH':1,'HIGH':2,'MEDIUM':3,'STEADY':4};
+const LVL_C={'EXTREMELY HIGH':'lvl-ex','VERY HIGH':'lvl-vh','HIGH':'lvl-h','MEDIUM':'lvl-m','STEADY':'lvl-s'};
+
+const BANK={
+  data:[
+    {id:'d1',title:'Real-time customer behaviour analytics',level:'EXTREMELY HIGH',pct:97,trend:'↑',market:'$42B',tamPct:100,samPct:18,somPct:3,growth:'+32% YoY',geo:{US:95,EU:88,Asia:72,Global:98},competitors:[{name:'Mixpanel',funding:'$77M',density:'high'},{name:'Amplitude',funding:'$336M',density:'high'},{name:'Heap',funding:'$195M',density:'med'}],barrierCapital:40,barrierTime:35,barrierSkill:55,barrierReg:20,why:'Every e-commerce, SaaS, and retail company needs to know what customers are doing in real time. This demand is structural — data equals money, and money chases this problem hard.',signals:['customer data platform','real-time analytics','behavioral tracking','conversion optimization'],platforms:[{name:'Vertical Analytics SaaS',type:'B2B SAAS',color:'#4f8ef7',desc:'Build a niche dashboard for one industry (restaurants, gyms, clinics) that turns raw event data into sector-specific KPIs. SMBs pay $99–$499/month for a Mixpanel alternative they actually understand.',stack:['Python','PostgreSQL','React','D3.js','Kafka'],revenue:'$12K–$80K MRR',difficulty:3,ttm:'4–6 months',entry:'Find one sector. Build a sector-specific dashboard. Talk to 20 operators. Charge flat monthly. Expand horizontally after PMF.'},{name:'Data Consultancy Retainer',type:'SERVICE',color:'#b8ff00',desc:'Sell data analysis as a monthly retainer to mid-market companies that have data but no analysts. Deliver weekly reports, model builds, and decision briefs.',stack:['Python','Power BI','SQL','Looker'],revenue:'$5K–$25K/month',difficulty:2,ttm:'2–4 weeks',entry:'Pick a sector. Cold outreach to ops directors. Free 2-week audit. Convert to retainer. Scale by hiring junior analysts.'}]},
+    {id:'d2',title:'Predictive sales forecasting tools',level:'VERY HIGH',pct:89,trend:'↑',market:'$18B',tamPct:100,samPct:22,somPct:4,growth:'+28% YoY',geo:{US:92,EU:79,Asia:65,Global:87},competitors:[{name:'Clari',funding:'$450M',density:'high'},{name:'Gong',funding:'$584M',density:'high'}],barrierCapital:50,barrierTime:45,barrierSkill:65,barrierReg:15,why:'Sales leaders at every company with 10+ people are guessing their pipeline. ML-based forecasting reduces that guesswork significantly. CRM vendors charge $80–$200/seat for it.',signals:['revenue intelligence','pipeline prediction','sales AI','CRM analytics'],platforms:[{name:'Revenue Intelligence Layer',type:'B2B SAAS',color:'#4f8ef7',desc:'A CRM-agnostic layer that ingests Salesforce/HubSpot data, applies ML forecasting, and delivers weekly accuracy reports positioned as "your CFO\'s second opinion on the pipeline."',stack:['Python','scikit-learn','REST API','React','Stripe'],revenue:'$8K–$60K MRR',difficulty:4,ttm:'5–8 months',entry:'Integrate with one CRM first (HubSpot). Target Series A-B SaaS companies. 30-day free trial. Charge per seat. Land and expand.'}]},
+  ],
+  decision:[
+    {id:'de1',title:'Risk decision support for enterprise teams',level:'HIGH',pct:79,trend:'→',market:'$9B',tamPct:100,samPct:15,somPct:2,growth:'+19% YoY',geo:{US:85,EU:82,Asia:58,Global:76},competitors:[{name:'Palisade',funding:'$12M',density:'low'},{name:'Palantir',funding:'$2.5B',density:'high'}],barrierCapital:45,barrierTime:50,barrierSkill:60,barrierReg:55,why:'Enterprises make millions of decisions per year. Wrong ones cost millions in overruns and lawsuits. Decision support software reduces that risk with data-backed frameworks.',signals:['decision intelligence','risk management tools','strategic planning','evidence-based decisions'],platforms:[{name:'Decision Intelligence Platform',type:'B2B SAAS',color:'#f59e0b',desc:'Structured decision-making tool for teams: intake forms, bias checks, evidence scoring, and audit trails. Sells to risk officers and procurement teams who need defensible decisions.',stack:['Node.js','Vue.js','PostgreSQL','OpenAI API'],revenue:'$15K–$90K MRR',difficulty:3,ttm:'3–5 months',entry:'Start with procurement decisions — high-value, well-defined, painful when wrong. Build the intake → scoring → audit flow. Charge per team/month.'}]},
+  ],
+  quality:[
+    {id:'q1',title:'Automated QC for food & pharmaceutical manufacturing',level:'HIGH',pct:84,trend:'↑',market:'$22B',tamPct:100,samPct:20,somPct:3,growth:'+21% YoY',geo:{US:88,EU:94,Asia:76,Global:85},competitors:[{name:'MasterControl',funding:'$180M',density:'med'},{name:'Veeva Vault',funding:'IPO',density:'high'}],barrierCapital:60,barrierTime:70,barrierSkill:65,barrierReg:90,why:'One contaminated batch in food or pharma = recall, lawsuits, destroyed brand. Manufacturers pay serious money for software that reduces that risk. Regulatory pressure is intensifying.',signals:['quality management software','ISO compliance','GMP software','batch traceability','defect detection'],platforms:[{name:'QMS SaaS for Food/Pharma',type:'B2B SAAS',color:'#22c55e',desc:'Quality Management System tailored to food or pharma SMBs. Manages SOPs, batch records, non-conformances, audits, and CAPA workflows. Replaces Excel with traceable digital records.',stack:['Django','PostgreSQL','React','AWS S3','DocuSign API'],revenue:'$20K–$150K MRR',difficulty:4,ttm:'6–10 months',entry:'Pick food or pharma. Get one pilot customer. Build to their needs. Target 3K–20K employee segment underserved by SAP.'},{name:'ISO Compliance Automation',type:'B2B SAAS',color:'#22c55e',desc:'Automate the documentation burden of ISO 9001, 22000, and GMP compliance. Auto-generate evidence packs for audits from operational data.',stack:['Python','FastAPI','React','PDF generation'],revenue:'$2K–$12K/client MRR',difficulty:3,ttm:'3–4 months',entry:'Partner with ISO consultants who will refer clients. Build a "compliance evidence auto-generator." Charge annual subscription.'}]},
+  ],
+  science:[
+    {id:'sc1',title:'AI-accelerated drug discovery platforms',level:'HIGH',pct:73,trend:'↑',market:'$7B',tamPct:100,samPct:12,somPct:2,growth:'+44% YoY',geo:{US:95,EU:88,Asia:70,Global:82},competitors:[{name:'Schrödinger',funding:'$100M+',density:'med'},{name:'Recursion',funding:'$436M',density:'med'}],barrierCapital:80,barrierTime:85,barrierSkill:90,barrierReg:95,why:'Pharma companies spend $2–3B to bring one drug to market over 12+ years. AI tools that compress that timeline by 20% are worth hundreds of millions.',signals:['drug discovery AI','molecular simulation','biotech tools','clinical trial software'],platforms:[{name:'Lab Data Management SaaS',type:'B2B SAAS',color:'#a855f7',desc:'Electronic Lab Notebook + LIMS hybrid for early-stage biotech. Replaces paper notebooks and spreadsheets with structured, searchable, compliant data management.',stack:['Python','Django','PostgreSQL','React','FDA 21 CFR Part 11'],revenue:'$5K–$40K MRR',difficulty:4,ttm:'6–9 months',entry:'Target Series A biotech startups (money, no IT infra). Price per researcher seat. Build data export for regulatory submissions.'}]},
+  ],
+  engineering:[
+    {id:'e1',title:'Infrastructure monitoring & predictive maintenance',level:'VERY HIGH',pct:92,trend:'↑',market:'$38B',tamPct:100,samPct:17,somPct:2,growth:'+26% YoY',geo:{US:90,EU:85,Asia:80,Global:92},competitors:[{name:'Uptake',funding:'$117M',density:'med'},{name:'SparkCognition',funding:'$123M',density:'med'},{name:'IBM Maximo',funding:'N/A',density:'high'}],barrierCapital:70,barrierTime:65,barrierSkill:75,barrierReg:40,why:'A bridge failure, grid outage, or pipeline rupture costs billions. Predictive maintenance that catches failure signatures before failure occurs is a must-buy, not a nice-to-have.',signals:['predictive maintenance','IoT monitoring','digital twin','SCADA alternative','asset management'],platforms:[{name:'Predictive Maintenance SaaS',type:'B2B SAAS',color:'#ef4444',desc:'Ingest sensor data (vibration, temperature, pressure) from industrial equipment. Apply ML anomaly detection. Alert engineers before failure. Integrates with SCADA.',stack:['Python','TensorFlow','InfluxDB','Grafana','MQTT','React'],revenue:'$30K–$200K MRR',difficulty:5,ttm:'8–12 months',entry:'Partner with equipment manufacturer. Get one anchor customer in energy or water utilities. Price per monitored asset.'},{name:'Construction Project Intelligence',type:'B2B SAAS',color:'#ef4444',desc:'Project management layer built for civil engineering: tracks material quantities, engineering sign-offs, compliance milestones, and variation orders.',stack:['React','Node.js','PostgreSQL','BIM API','AWS'],revenue:'$10K–$60K MRR',difficulty:3,ttm:'4–6 months',entry:'Interview 10 project engineers. Find the biggest pain (usually variation order tracking). Build that module first. Charge per project.'}]},
+    {id:'e2',title:'Structural failure detection using computer vision',level:'HIGH',pct:82,trend:'↑',market:'$12B',tamPct:100,samPct:14,somPct:2,growth:'+38% YoY',geo:{US:88,EU:82,Asia:75,Global:84},competitors:[{name:'DroneDeploy',funding:'$142M',density:'med'},{name:'Skydio',funding:'$340M',density:'med'}],barrierCapital:65,barrierTime:60,barrierSkill:80,barrierReg:50,why:'Manual inspection of bridges, buildings, and pipelines is slow, expensive, and dangerous. Computer vision on drone footage is replacing human inspectors rapidly.',signals:['drone inspection software','crack detection AI','bridge inspection','infrastructure AI'],platforms:[{name:'Drone Inspection AI Platform',type:'B2B SAAS',color:'#ef4444',desc:'Upload drone footage, get automated defect detection reports (cracks, spalling, corrosion). Sell to civil engineering firms as a drone inspection operating system.',stack:['Python','PyTorch','Computer Vision','React','AWS S3','PDF reporting'],revenue:'$8K–$50K MRR',difficulty:5,ttm:'6–10 months',entry:'Partner with a drone operator. Train models on public bridge inspection datasets. Price per inspection or annual subscription.'}]},
+  ],
+  tech:[
+    {id:'t1',title:'AI-powered SaaS in vertical markets',level:'EXTREMELY HIGH',pct:99,trend:'↑',market:'$157B',tamPct:100,samPct:25,somPct:4,growth:'+67% YoY',geo:{US:99,EU:92,Asia:88,Global:96},competitors:[{name:'Vertical AI startups (1000s)',funding:'Varies',density:'med'},{name:'Generic AI tools',funding:'Billions',density:'high'}],barrierCapital:20,barrierTime:25,barrierSkill:45,barrierReg:20,why:'Every industry is being re-platformed with AI. Winners in each vertical will own it for a decade. First-movers in underserved sectors (legal, construction, logistics) capture enormous value fast.',signals:['vertical SaaS','AI tools for business','workflow automation','industry AI copilot','LLM application'],platforms:[{name:'Vertical AI Copilot',type:'B2B SAAS',color:'#00ccff',desc:'Pick one underserved vertical (legal, construction, agriculture, logistics). Build an AI workflow product that replaces the #1 most painful daily task. Charge per seat per month.',stack:['Next.js','Anthropic API','PostgreSQL','Stripe','Vercel'],revenue:'$20K–$500K+ MRR',difficulty:2,ttm:'2–4 months',entry:'Talk to 20 people in your target vertical. Find the workflow that takes 3+ hours/day. Build an AI copilot that does it in 10 minutes. 5 beta users. Charge from day one.'},{name:'AI Developer Infrastructure',type:'B2D SAAS',color:'#00ccff',desc:'Build infrastructure tools for developers building AI products: LLM evaluation, prompt management, cost monitoring, observability. Developers are the fastest growing buyer segment.',stack:['Python','TypeScript','Docker','GitHub integration'],revenue:'$5K–$200K MRR',difficulty:4,ttm:'3–5 months',entry:'Open source the core. Charge for cloud-hosted version. Grow on GitHub stars. Convert free users to paid with enterprise features (SSO, audit logs).'},{name:'No-Code AI Automation',type:'PLATFORM',color:'#00ccff',desc:'Zapier/Make competitor for one specific use case. Pick the workflow Zapier does badly for your target customer and build it 10x better and cheaper.',stack:['Node.js','React','PostgreSQL','Webhook infrastructure'],revenue:'$15K–$120K MRR',difficulty:4,ttm:'4–7 months',entry:'Choose one workflow category. Build 15 deep integrations. Charge monthly. Expand after first 100 customers.'}]},
+    {id:'t2',title:'Cybersecurity products for SMBs',level:'EXTREMELY HIGH',pct:96,trend:'↑',market:'$86B',tamPct:100,samPct:20,somPct:3,growth:'+31% YoY',geo:{US:95,EU:96,Asia:78,Global:90},competitors:[{name:'Huntress',funding:'$97M',density:'med'},{name:'Datto',funding:'Acquired',density:'high'},{name:'Cybereason',funding:'$400M',density:'med'}],barrierCapital:35,barrierTime:40,barrierSkill:60,barrierReg:45,why:'SMBs are attacked 3× more than enterprises and have 10× fewer defenses. Every regulatory change (NIS2, GDPR fines, cyber insurance requirements) creates a new buying moment.',signals:['SMB cybersecurity','endpoint protection','phishing simulation','security awareness','compliance tools'],platforms:[{name:'SMB Security-as-a-Service',type:'B2B SAAS',color:'#00ccff',desc:'Bundle phishing simulation, employee training, policy templates, and basic monitoring into a $99/month product for 10–200 employee companies.',stack:['Python','React','Email infrastructure','PostgreSQL','Stripe'],revenue:'$10K–$80K MRR',difficulty:3,ttm:'3–5 months',entry:'Partner with cyber insurance broker. White-label to IT MSPs. Price flat monthly (not per seat) to remove friction.'}]},
+  ],
+  education:[
+    {id:'ed1',title:'Corporate learning & upskilling platforms',level:'HIGH',pct:76,trend:'→',market:'$32B',tamPct:100,samPct:18,somPct:3,growth:'+22% YoY',geo:{US:85,EU:78,Asia:65,Global:78},competitors:[{name:'Coursera for Business',funding:'IPO',density:'high'},{name:'LinkedIn Learning',funding:'N/A',density:'high'},{name:'360Learning',funding:'$200M',density:'med'}],barrierCapital:30,barrierTime:45,barrierSkill:40,barrierReg:20,why:'Companies spend record amounts on L&D. AI-driven role changes mean every employee needs to learn new skills every 2–3 years. The $360B corporate training market is being disrupted.',signals:['corporate LMS','upskilling platform','microlearning','AI tutor','skills gap training'],platforms:[{name:'Vertical Upskilling Platform',type:'B2B SAAS',color:'#f97316',desc:'Focused upskilling platform for one industry — manufacturing workers learning new software, or salespeople learning AI tools. Depth beats breadth in L&D.',stack:['React','Node.js','PostgreSQL','Video streaming','SCORM'],revenue:'$8K–$60K MRR',difficulty:3,ttm:'3–5 months',entry:'Partner with an employer who will fund development. Get a cohort of 50–200 learners. Productize the curriculum. Sell to 10 similar companies.'},{name:'AI Tutoring SaaS',type:'B2C/B2B SAAS',color:'#f97316',desc:'AI tutor that adapts to individual learner gaps. Targets exam prep, professional certifications, or workplace compliance training. Beats static video courses.',stack:['Next.js','Anthropic API','PostgreSQL','Stripe'],revenue:'$5K–$40K MRR',difficulty:3,ttm:'2–3 months',entry:'Pick one certification (AWS, CPA, CISSP). Build an AI practice exam engine that explains wrong answers deeply. Launch on Reddit/LinkedIn. Charge $29–$79/month.'}]},
+    {id:'ed2',title:'EdTech for trade skills & vocational training',level:'STEADY',pct:61,trend:'↑',market:'$8B',tamPct:100,samPct:15,somPct:3,growth:'+15% YoY',geo:{US:70,EU:75,Asia:55,Global:65},competitors:[{name:'ApprenticeNow',funding:'$10M',density:'low'},{name:'Guild Education',funding:'$600M',density:'med'}],barrierCapital:25,barrierTime:30,barrierSkill:30,barrierReg:35,why:'Acute global shortages in electricians, plumbers, welders, HVAC technicians. Governments and employers are funding trade education at record levels. Under-digitized market.',signals:['trade school software','apprenticeship platforms','vocational LMS','skills credentialing'],platforms:[{name:'Trade Apprenticeship Platform',type:'B2B2C SAAS',color:'#f97316',desc:'Manage apprenticeships digitally: log hours, track competencies, manage assessments, issue credentials. Replaces paper logbooks entirely.',stack:['React Native','Node.js','PostgreSQL','PDF generation','QR credentials'],revenue:'$3K–$20K MRR',difficulty:2,ttm:'2–4 months',entry:'Partner with one trade association. Get their endorsement. Charge the employer per apprentice per year. Expand across trades.'}]},
+  ]
+};
+
+// Generate sparkline history for each signal
+function genHistory(pct){
+  const h=[];let v=pct-20+Math.random()*10;
+  for(let i=0;i<12;i++){v+=((Math.random()-.4)*8);v=Math.max(20,Math.min(99,v));h.push(Math.round(v));}
+  h[h.length-1]=pct;return h;
+}
+Object.values(BANK).flat().forEach(d=>{d.history=genHistory(d.pct);});
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const S={
+  demands:[],current:null,filter:'all',sort:'lvl',
+  watchlist:JSON.parse(localStorage.getItem('dr_wl')||'[]'),
+  compareList:[],
+  history:JSON.parse(localStorage.getItem('dr_hist')||'[]'),
+  notes:JSON.parse(localStorage.getItem('dr_notes')||'{}'),
+  scans:0,aiQueries:0,
+  autoRescanInterval:0,autoRescanTimer:null,arCountdown:0,arCountdownTimer:null,
+  activeTab:'discover',
+};
+
+// ══════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════
+setInterval(()=>{document.getElementById('clk').textContent=new Date().toISOString().slice(11,19)+' UTC';},1000);
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+function switchTab(id,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+id)?.classList.add('active');
+  S.activeTab=id;
+  if(id==='watchlist')renderWatchlist();
+  if(id==='compare')renderCompare();
+  if(id==='history')renderHistory();
+}
+
+// ══════════════════════════════════════
+// SCAN
+// ══════════════════════════════════════
+async function runScan(){
+  switchTab('discover',document.querySelector('[data-tab="discover"]'));
+  const topic=document.getElementById('scanInput').value.trim();
+  document.getElementById('sweepBar').classList.add('on');
+  document.getElementById('aiBadge').textContent='⏳ SCANNING…';
+  document.getElementById('feedList').innerHTML='<div style="text-align:center;padding:30px;font-family:var(--fm);font-size:.62rem;letter-spacing:2px;color:var(--muted);">SCANNING DEMAND SIGNALS…</div>';
+
+  // Get all signals from bank
+  let all=Object.values(BANK).flat().map(d=>({...d}));
+
+  // Deep scan with AI if enabled
+  if(document.getElementById('deepToggle').classList.contains('on')&&topic){
+    try{
+      const extra=await deepScan(topic);
+      all=[...extra,...all];
+      S.aiQueries++;
+    }catch(e){}
+  }
+
+  await delay(500);
+  document.getElementById('sweepBar').classList.remove('on');
+
+  S.demands=all;
+  S.scans++;
+
+  // Save to history
+  S.history.unshift({id:Date.now(),topic:topic||'Global Market Scan',time:new Date().toISOString().slice(0,19).replace('T',' '),signals:all.length,scans:S.scans,demands:[...all]});
+  if(S.history.length>20)S.history.pop();
+  localStorage.setItem('dr_hist',JSON.stringify(S.history.map(h=>({...h,demands:[]}))));
+
+  renderFeed();
+  renderHeatmap();
+  updateStats();
+  document.getElementById('aiBadge').textContent='SELECT SIGNAL';
+  document.getElementById('feedCount').textContent=all.length+' SIGNALS';
+  document.getElementById('watchBtn').style.display='none';
+  document.getElementById('compareBtn').style.display='none';
+  document.getElementById('noteBtn').style.display='none';
+
+  // Auto-select top signal
+  const top=all.find(d=>d.level==='EXTREMELY HIGH')||all[0];
+  if(top)selectDemand(top);
+
+  toast('SCAN COMPLETE',`${all.length} demand signals across 7 domains`,'lime');
+}
+
+async function deepScan(topic){
+  const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1400,messages:[{role:'user',content:`You are DEMAND RADAR v2. The user scanned: "${topic}". Return ONLY a JSON array of 3 demand signals specific to "${topic}". No other text:\n[{"id":"ai1","domain":"tech","title":"Specific demand for ${topic}","level":"EXTREMELY HIGH","pct":97,"trend":"↑","market":"$XXB","tamPct":100,"samPct":18,"somPct":3,"growth":"+XX% YoY","geo":{"US":95,"EU":80,"Asia":70,"Global":90},"competitors":[{"name":"Competitor","funding":"$XXM","density":"med"}],"barrierCapital":40,"barrierTime":35,"barrierSkill":55,"barrierReg":20,"why":"2-3 sentences why this demand is high for ${topic}","signals":["kw1","kw2","kw3"],"platforms":[{"name":"Platform name","type":"B2B SAAS","color":"#00ccff","desc":"2-3 sentences on what to build","stack":["Tech1","Tech2","Tech3"],"revenue":"$X–$Y MRR","difficulty":3,"ttm":"X–Y months","entry":"Step-by-step entry strategy"}]}]\nDomains: data, decision, quality, science, engineering, tech, education.`}]})});
+  const data=await res.json();
+  const text=data.content?.map(c=>c.text||'').join('')||'';
+  const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+  const VALID=['data','decision','quality','science','engineering','tech','education'];
+  return parsed.map(d=>({...d,domain:VALID.includes(d.domain)?d.domain:'tech',history:genHistory(d.pct||80)}));
+}
+
+// ══════════════════════════════════════
+// HEATMAP
+// ══════════════════════════════════════
+function renderHeatmap(){
+  const grid=document.getElementById('heatmapGrid');
+  const labels=document.getElementById('heatmapLabels');
+  const doms=Object.keys(DOMAINS);
+  const levels=['EXTREMELY HIGH','VERY HIGH','HIGH','MEDIUM','STEADY'];
+  grid.innerHTML='';labels.innerHTML='';
+  doms.forEach(dk=>{
+    const d=DOMAINS[dk];
+    const signals=S.demands.filter(s=>s.domain===dk);
+    const topLevel=signals.length?signals.reduce((best,s)=>(LVL_O[s.level]<LVL_O[best.level]?s:best),signals[0]):null;
+    const pct=topLevel?topLevel.pct:0;
+    const hex=dk==='data'?'#4f8ef7':dk==='decision'?'#f59e0b':dk==='quality'?'#22c55e':dk==='science'?'#a855f7':dk==='engineering'?'#ef4444':dk==='tech'?'#00ccff':'#f97316';
+    const cell=document.createElement('div');
+    cell.className='hm-cell';
+    cell.style.background=pct>0?hexOpacity(hex,pct/100*.85):'transparent';
+    cell.setAttribute('data-tip',`${d.abbr}: ${topLevel?topLevel.level:'—'} (${pct}%)`);
+    cell.onclick=()=>{filterD(dk,document.querySelector(`[data-d="${dk}"]`));};
+    grid.appendChild(cell);
+    const lbl=document.createElement('div');
+    lbl.className='hm-lbl';
+    lbl.textContent=d.abbr;
+    lbl.style.color=hex;
+    labels.appendChild(lbl);
+  });
+}
+
+function hexOpacity(hex,alpha){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ══════════════════════════════════════
+// RENDER FEED
+// ══════════════════════════════════════
+function renderFeed(){
+  const list=document.getElementById('feedList');
+  const search=document.getElementById('searchMini').value.toLowerCase();
+  const sort=document.getElementById('sortSel').value;
+  let items=S.filter==='all'?[...S.demands]:S.demands.filter(d=>d.domain===S.filter);
+  if(search)items=items.filter(d=>d.title.toLowerCase().includes(search)||(DOMAINS[d.domain]?.label||d.domain||'').toLowerCase().includes(search));
+
+  if(sort==='lvl')items.sort((a,b)=>LVL_O[a.level]-LVL_O[b.level]);
+  else if(sort==='mkt')items.sort((a,b)=>parseFloat(b.market||'$0')-parseFloat(a.market||'$0'));
+  else if(sort==='diff'){
+    items.sort((a,b)=>{
+      const ma=a.platforms?Math.min(...a.platforms.map(p=>p.difficulty||5)):5;
+      const mb=b.platforms?Math.min(...b.platforms.map(p=>p.difficulty||5)):5;
+      return ma-mb;
+    });
+  }
+  else if(sort==='rev'){items.sort((a,b)=>b.pct-a.pct);}
+
+  list.innerHTML='';
+  if(!items.length){list.innerHTML='<div class="empty"><div class="e-ico">◉</div><div class="e-title">NO SIGNALS</div><div class="e-desc">Change filter or run a new scan.</div></div>';return;}
+  items.forEach((d,i)=>list.appendChild(buildCard(d,i)));
+}
+
+function buildCard(d,i){
+  const dom=DOMAINS[d.domain]||{label:d.domain||'Unknown',icon:'◉',color:'#5a7a9a',abbr:(d.domain||'UNK').toUpperCase()};
+  const el=document.createElement('div');
+  const isWatched=S.watchlist.find(w=>w.id===d.id);
+  const isCompare=S.compareList.find(c=>c.id===d.id);
+  el.className='dc'+(S.current?.id===d.id?' sel':'')+(isWatched?' watched':'');
+  el.style.setProperty('--ca',dom.color);
+  el.style.animationDelay=(i*.04)+'s';
+
+  // Sparkline
+  const maxH=Math.max(...(d.history||[1]));
+  const sparks=(d.history||[]).map(v=>`<div class="spark-bar" style="height:${Math.round((v/maxH)*18)}px;"></div>`).join('');
+  const trendColor=d.trend==='↑'?'var(--lime)':d.trend==='↓'?'var(--hot)':'var(--muted)';
+
+  el.innerHTML=`
+    <button class="watch-btn ${isWatched?'on':''}" onclick="toggleWatch('${d.id}',event)" title="Watch">${isWatched?'★':'☆'}</button>
+    <div class="dc-top">
+      <div class="dc-dom">${dom.icon} ${dom.abbr}</div>
+      <div class="dc-trend" style="color:${trendColor}">${d.trend||'→'} ${d.growth||''}</div>
+    </div>
+    <div class="dc-title">${d.title}</div>
+    <div class="dc-meta">
+      <span class="lvl ${LVL_C[d.level]||'lvl-s'}">${d.level}</span>
+      <span style="font-family:var(--fm);font-size:.56rem;color:var(--lime);">${d.market}</span>
+    </div>
+    <div class="sparkline">${sparks}</div>
+    <button class="compare-btn ${isCompare?'on':''}" onclick="toggleCompare('${d.id}',event)">${isCompare?'⟷ IN COMPARE':'⟷ COMPARE'}</button>`;
+  el.addEventListener('click',e=>{if(!e.target.closest('.watch-btn')&&!e.target.closest('.compare-btn'))selectDemand(d);});
+  return el;
+}
+
+// ══════════════════════════════════════
+// SELECT DEMAND → ANALYSIS
+// ══════════════════════════════════════
+async function selectDemand(demand){
+  S.current=demand;
+  document.getElementById('analysisPlaceholder').style.display='none';
+  const ac=document.getElementById('analysisContent');
+  ac.style.display='block';
+  document.getElementById('aiBadge').textContent='⚡ ANALYSING';
+  document.getElementById('watchBtn').style.display='';
+  document.getElementById('compareBtn').style.display='';
+  document.getElementById('noteBtn').style.display='';
+  document.getElementById('calcSection').style.display='';
+  document.getElementById('noteSection').style.display='';
+
+  const dom=DOMAINS[demand.domain]||{label:demand.domain||'Unknown',icon:'◉',color:'#5a7a9a',abbr:(demand.domain||'UNK').toUpperCase()};
+  const isWatched=S.watchlist.find(w=>w.id===demand.id);
+  document.getElementById('watchBtn').textContent=(isWatched?'★ WATCHING':'☆ WATCH');
+
+  // Load saved note
+  document.getElementById('noteBox').value=S.notes[demand.id]||'';
+
+  let html='';
+
+  // ── DEMAND OVERVIEW ──
+  html+=`<div class="ab" style="--dot-c:${dom.color};animation-delay:.0s">
+    <div class="ab-title"><div class="ab-dot"></div>DEMAND OVERVIEW · ${dom.icon} ${dom.label.toUpperCase()}</div>
+    <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:14px;">
+      <div>
+        <div style="font-family:var(--fd);font-size:2.5rem;letter-spacing:2px;color:${dom.color};line-height:1;">${demand.level}</div>
+        <div style="font-family:var(--fm);font-size:.55rem;color:var(--muted);margin-top:4px;letter-spacing:2px;">${demand.trend==='↑'?'📈 RISING':demand.trend==='↓'?'📉 FALLING':'➡ STABLE'} · ${demand.growth||''}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <div><div style="font-family:var(--fm);font-size:.52rem;color:var(--muted);letter-spacing:2px;margin-bottom:2px;">MARKET SIZE</div><div style="font-family:var(--fd);font-size:1.6rem;letter-spacing:1px;color:var(--lime);">${demand.market}</div></div>
+      </div>
+    </div>
+    <div class="gauge-grid">
+      <div class="gauge-row"><span class="gauge-lbl">DEMAND</span><div class="gauge-track"><div class="gauge-fill" style="width:${demand.pct}%;background:${dom.color};box-shadow:0 0 8px ${dom.color};"></div></div><span class="gauge-val">${demand.pct}%</span></div>
+      <div class="gauge-row"><span class="gauge-lbl">URGENCY</span><div class="gauge-track"><div class="gauge-fill" style="width:${Math.min(99,demand.pct-2+Math.round(Math.random()*5))}%;background:var(--hot);box-shadow:0 0 8px var(--hot);"></div></div><span class="gauge-val">${Math.min(99,demand.pct-1)}%</span></div>
+      <div class="gauge-row"><span class="gauge-lbl">PROFITABILITY</span><div class="gauge-track"><div class="gauge-fill" style="width:${Math.min(96,demand.pct-4+Math.round(Math.random()*8))}%;background:var(--lime);box-shadow:0 0 8px var(--lime);"></div></div><span class="gauge-val">${Math.min(96,demand.pct-3)}%</span></div>
+      <div class="gauge-row"><span class="gauge-lbl">GROWTH RATE</span><div class="gauge-track"><div class="gauge-fill" style="width:${Math.min(95,parseInt(demand.growth||'15')+40)}%;background:var(--gold);box-shadow:0 0 8px var(--gold);"></div></div><span class="gauge-val">${demand.growth||'+20% YoY'}</span></div>
+    </div>
+    <div style="font-size:.76rem;line-height:1.78;color:var(--text);margin-top:12px;">${demand.why}</div>
+  </div>`;
+
+  // ── TAM/SAM/SOM ──
+  const tam=parseFloat((demand.market||'$10B').replace(/[^0-9.]/g,''));
+  const sam=Math.round(tam*(demand.samPct||15)/100*10)/10;
+  const som=Math.round(tam*(demand.somPct||2)/100*10)/10;
+  html+=`<div class="ab" style="--dot-c:var(--gold);animation-delay:.06s">
+    <div class="ab-title"><div class="ab-dot"></div>TAM / SAM / SOM BREAKDOWN</div>
+    <div class="market-bars">
+      <div class="market-row"><span class="market-lbl" style="color:var(--gold);">TAM</span><div class="market-track"><div class="market-fill" style="width:100%;background:rgba(255,204,0,.4);--w:100%;"></div></div><span class="market-amount" style="color:var(--gold);">${demand.market}</span></div>
+      <div class="market-row"><span class="market-lbl" style="color:var(--ice);">SAM</span><div class="market-track"><div class="market-fill" style="width:${demand.samPct||15}%;background:rgba(0,204,255,.5);--w:${demand.samPct||15}%;"></div></div><span class="market-amount" style="color:var(--ice);">$${sam}B</span></div>
+      <div class="market-row"><span class="market-lbl" style="color:var(--lime);">SOM</span><div class="market-track"><div class="market-fill" style="width:${(demand.somPct||2)*3}%;background:rgba(168,255,0,.6);--w:${(demand.somPct||2)*3}%;"></div></div><span class="market-amount" style="color:var(--lime);">$${som}B</span></div>
+    </div>
+    <div style="font-family:var(--fm);font-size:.58rem;color:var(--muted);margin-top:8px;line-height:1.7;">TAM: Total Addressable Market · SAM: Serviceable Addressable Market · SOM: Serviceable Obtainable Market (realistic 3-year target)</div>
+  </div>`;
+
+  // ── GEOGRAPHIC DEMAND ──
+  const geo=demand.geo||{US:80,EU:70,Asia:60,Global:75};
+  html+=`<div class="ab" style="--dot-c:var(--ice);animation-delay:.09s">
+    <div class="ab-title"><div class="ab-dot"></div>GEOGRAPHIC DEMAND BREAKDOWN</div>
+    <div class="gauge-grid">
+      ${Object.entries(geo).map(([region,v])=>`<div class="gauge-row"><span class="gauge-lbl">${region}</span><div class="gauge-track"><div class="gauge-fill" style="width:${v}%;background:var(--ice);box-shadow:0 0 6px var(--ice);opacity:.7;"></div></div><span class="gauge-val">${v}%</span></div>`).join('')}
+    </div>
+  </div>`;
+
+  // ── BARRIER TO ENTRY ──
+  html+=`<div class="ab" style="--dot-c:var(--hot);animation-delay:.12s">
+    <div class="ab-title"><div class="ab-dot"></div>BARRIER TO ENTRY ANALYSIS</div>
+    <div class="barrier-grid">
+      <div class="barrier-item"><div class="barrier-name">Capital Required</div><div class="barrier-bar"><div class="barrier-fill" style="width:${demand.barrierCapital||50}%;background:${demand.barrierCapital>70?'var(--hot)':demand.barrierCapital>40?'var(--gold)':'var(--lime)'};"></div></div><div class="barrier-val">${demand.barrierCapital>70?'HIGH':demand.barrierCapital>40?'MEDIUM':'LOW'} (${demand.barrierCapital||50}%)</div></div>
+      <div class="barrier-item"><div class="barrier-name">Time to Market</div><div class="barrier-bar"><div class="barrier-fill" style="width:${demand.barrierTime||50}%;background:${demand.barrierTime>70?'var(--hot)':demand.barrierTime>40?'var(--gold)':'var(--lime)'};"></div></div><div class="barrier-val">${demand.barrierTime>70?'LONG':demand.barrierTime>40?'MEDIUM':'SHORT'} (${demand.barrierTime||50}%)</div></div>
+      <div class="barrier-item"><div class="barrier-name">Skill Ceiling</div><div class="barrier-bar"><div class="barrier-fill" style="width:${demand.barrierSkill||50}%;background:${demand.barrierSkill>70?'var(--hot)':demand.barrierSkill>40?'var(--gold)':'var(--lime)'};"></div></div><div class="barrier-val">${demand.barrierSkill>70?'HIGH':demand.barrierSkill>40?'MEDIUM':'LOW'} (${demand.barrierSkill||50}%)</div></div>
+      <div class="barrier-item"><div class="barrier-name">Regulation</div><div class="barrier-bar"><div class="barrier-fill" style="width:${demand.barrierReg||30}%;background:${demand.barrierReg>70?'var(--hot)':demand.barrierReg>40?'var(--gold)':'var(--lime)'};"></div></div><div class="barrier-val">${demand.barrierReg>70?'HEAVY':demand.barrierReg>40?'MODERATE':'LIGHT'} (${demand.barrierReg||30}%)</div></div>
+    </div>
+  </div>`;
+
+  // ── COMPETITOR LANDSCAPE ──
+  if(demand.competitors?.length){
+    const densityTotal=demand.competitors.length;
+    const densityLabel=densityTotal<=2?'LOW COMPETITION':densityTotal<=4?'MODERATE':'SATURATED';
+    const densityColor=densityTotal<=2?'var(--lime)':densityTotal<=4?'var(--gold)':'var(--hot)';
+    html+=`<div class="ab" style="--dot-c:var(--pink);animation-delay:.15s">
+      <div class="ab-title"><div class="ab-dot"></div>COMPETITOR LANDSCAPE · <span style="color:${densityColor};">DENSITY: ${densityLabel}</span></div>
+      <div class="comp-list">
+        ${demand.competitors.map(c=>`<div class="comp-item"><span class="comp-name">${c.name}</span><span class="comp-funding">💰 ${c.funding}</span><span class="comp-density dens-${c.density||'med'}">${c.density==='low'?'LOW COMPETITION':c.density==='high'?'SATURATED':'MODERATE'}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ── DEMAND SIGNALS ──
+  if(demand.signals?.length){
+    html+=`<div class="ab" style="--dot-c:var(--gold);animation-delay:.18s">
+      <div class="ab-title"><div class="ab-dot"></div>LIVE DEMAND SIGNALS DETECTED</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">${demand.signals.map(s=>`<div style="padding:3px 9px;background:var(--faint);border:1px solid var(--rim2);font-family:var(--fm);font-size:.58rem;color:var(--muted);">${s}</div>`).join('')}</div>
+    </div>`;
+  }
+
+  // ── PLATFORM RECOMMENDATIONS ──
+  if(demand.platforms?.length){
+    html+=`<div class="ab" style="--dot-c:var(--lime);animation-delay:.21s">
+      <div class="ab-title"><div class="ab-dot"></div>PLATFORM RECOMMENDATIONS — WHAT TO BUILD</div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        ${demand.platforms.map((p,pi)=>{
+          const diff=[1,2,3,4,5].map(n=>`<div class="dd ${n<=p.difficulty?'on':''}"></div>`).join('');
+          return `<div class="plat-card" style="--pc:${p.color};animation-delay:${pi*.1}s" onclick="showPlatDetail(${pi})">
+            <div class="plat-hdr"><div class="plat-name">${p.name}</div><div class="plat-type">${p.type}</div></div>
+            <div class="plat-desc">${p.desc}</div>
+            <div class="stack-tags">${(p.stack||[]).map(s=>`<span class="stag">${s}</span>`).join('')}</div>
+            <div class="plat-foot">
+              <div class="plat-metric"><div class="pm-lbl">REVENUE</div><div class="pm-val" style="color:var(--lime);">${p.revenue}</div></div>
+              <div class="plat-metric"><div class="pm-lbl">DIFFICULTY</div><div class="diff-dots">${diff}</div></div>
+              <div class="plat-metric"><div class="pm-lbl">TIME TO MARKET</div><div class="pm-val" style="color:var(--ice);font-size:.7rem;">${p.ttm}</div></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // ── GTM / GO-TO-MARKET ──
+  if(demand.platforms?.length){
+    const fastest=demand.platforms.reduce((a,b)=>a.difficulty<=b.difficulty?a:b);
+    const channels=demand.domain==='tech'?['Product Hunt launch','Developer communities (HN, Reddit)','GitHub open source','Cold outreach to CTOs']:demand.domain==='data'?['LinkedIn outreach to analysts','Data science Slack communities','Content marketing (case studies)','Partnership with BI consultants']:['Industry association partnerships','Trade publications','Direct sales to operations managers','Word of mouth in tight sectors'];
+    html+=`<div class="ab" style="--dot-c:var(--violet);animation-delay:.28s">
+      <div class="ab-title"><div class="ab-dot"></div>GO-TO-MARKET STRATEGY</div>
+      <div class="gtm-grid">
+        <div class="gtm-card"><div class="gtm-label">FASTEST ENTRY</div><div class="gtm-value">${fastest.name}<br><span style="color:var(--muted);font-size:.68rem;">${fastest.ttm} · Difficulty ${fastest.difficulty}/5</span></div></div>
+        <div class="gtm-card"><div class="gtm-label">IDEAL CUSTOMER PROFILE</div><div class="gtm-value">${demand.domain==='tech'?'Technical founders, CTOs, Product Managers at growth-stage companies':demand.domain==='data'?'Operations directors, data teams at mid-market companies':demand.domain==='quality'?'Quality managers at manufacturing SMBs':'Senior decision-makers at relevant sector companies'}</div></div>
+        <div class="gtm-card"><div class="gtm-label">PRIMARY CHANNELS</div><div class="gtm-value">${channels.slice(0,2).join(' · ')}</div></div>
+        <div class="gtm-card"><div class="gtm-label">PRICING MODEL</div><div class="gtm-value">${demand.domain==='tech'?'Monthly SaaS subscription per seat':demand.domain==='data'?'Retainer or flat monthly subscription':'Annual contract with monthly payment option'}</div></div>
+      </div>
+    </div>`;
+  }
+
+  ac.innerHTML=html;
+  updateStats();
+  calcMRR();
+  renderFeed(); // refresh selection
+  document.getElementById('analysisBody').scrollTop=0;
+  document.getElementById('aiBadge').textContent='✓ ANALYSED';
+}
+
+function showPlatDetail(idx){
+  if(!S.current||!S.current.platforms[idx])return;
+  const p=S.current.platforms[idx];
+  const diff=[1,2,3,4,5].map(n=>`<div class="dd ${n<=p.difficulty?'on':''}" style="width:8px;height:8px;"></div>`).join('');
+  document.getElementById('platModalTitle').textContent=p.name;
+  document.getElementById('platModalBody').innerHTML=`
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <span style="padding:3px 9px;border:1px solid ${p.color};color:${p.color};font-family:var(--fm);font-size:.58rem;">${p.type}</span>
+      <span style="padding:3px 9px;border:1px solid var(--lime);color:var(--lime);font-family:var(--fm);font-size:.58rem;">${p.revenue}</span>
+    </div>
+    <div style="font-size:.78rem;line-height:1.78;color:var(--text);margin-bottom:16px;">${p.desc}</div>
+    <div style="margin-bottom:14px;"><div style="font-family:var(--fm);font-size:.58rem;letter-spacing:2px;color:var(--muted);margin-bottom:7px;">TECH STACK</div><div style="display:flex;flex-wrap:wrap;gap:5px;">${(p.stack||[]).map(s=>`<span class="stag">${s}</span>`).join('')}</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div style="background:var(--plate);padding:11px;border:1px solid var(--rim);"><div style="font-family:var(--fm);font-size:.52rem;color:var(--muted);margin-bottom:5px;letter-spacing:2px;">REVENUE</div><div style="color:var(--lime);font-weight:700;">${p.revenue}</div></div>
+      <div style="background:var(--plate);padding:11px;border:1px solid var(--rim);"><div style="font-family:var(--fm);font-size:.52rem;color:var(--muted);margin-bottom:5px;letter-spacing:2px;">DIFFICULTY</div><div style="display:flex;gap:3px;margin-top:4px;">${diff}</div></div>
+      <div style="background:var(--plate);padding:11px;border:1px solid var(--rim);"><div style="font-family:var(--fm);font-size:.52px;color:var(--muted);margin-bottom:5px;letter-spacing:2px;">TIME</div><div style="color:var(--ice);font-weight:600;">${p.ttm}</div></div>
+    </div>
+    <div style="background:rgba(0,204,255,.05);border:1px solid rgba(0,204,255,.2);padding:14px;"><div style="font-family:var(--fm);font-size:.58rem;letter-spacing:2px;color:var(--ice);margin-bottom:9px;">▸ HOW TO ENTER THIS MARKET</div><div style="font-size:.76rem;line-height:1.78;color:var(--text);">${p.entry||'—'}</div></div>`;
+  openModal('platModal');
+}
+
+// ══════════════════════════════════════
+// REVENUE CALCULATOR
+// ══════════════════════════════════════
+function calcMRR(){
+  const c=+document.getElementById('calcCustomers').value;
+  const p=+document.getElementById('calcPrice').value;
+  const ch=+document.getElementById('calcChurn').value/100;
+  document.getElementById('calcCustomersVal').textContent=c;
+  document.getElementById('calcPriceVal').textContent='$'+p;
+  document.getElementById('calcChurnVal').textContent=ch*100+'%';
+  const steadyState=Math.round(c*(1/(ch||.05)));
+  const mrr=Math.round(steadyState*p);
+  document.getElementById('calcMRR').textContent='$'+mrr.toLocaleString();
+  document.getElementById('calcARR').textContent='$'+Math.round(mrr*12/1000)+'K ARR';
+}
+
+// ══════════════════════════════════════
+// NOTES
+// ══════════════════════════════════════
+function saveNote(){
+  if(!S.current)return;
+  S.notes[S.current.id]=document.getElementById('noteBox').value;
+  localStorage.setItem('dr_notes',JSON.stringify(S.notes));
+}
+function focusNote(){
+  document.getElementById('noteSection').style.display='';
+  document.getElementById('noteBox').focus();
+  document.getElementById('analysisBody').scrollTop=99999;
+}
+
+// ══════════════════════════════════════
+// WATCHLIST
+// ══════════════════════════════════════
+function toggleWatch(id,e){
+  e?.stopPropagation();
+  const demand=S.demands.find(d=>d.id===id);
+  if(!demand)return;
+  const idx=S.watchlist.findIndex(w=>w.id===id);
+  if(idx>=0){S.watchlist.splice(idx,1);toast('UNWATCHED',demand.title.slice(0,40),'muted');}
+  else{S.watchlist.push({id:demand.id,title:demand.title,domain:demand.domain,level:demand.level,market:demand.market,color:DOMAINS[demand.domain]?.color||'#5a7a9a'});toast('WATCHING',demand.title.slice(0,40),'gold');}
+  localStorage.setItem('dr_wl',JSON.stringify(S.watchlist));
+  document.getElementById('wl-badge').textContent=S.watchlist.length;
+  updateStats();renderFeed();
+  if(S.current?.id===id){const isW=S.watchlist.find(w=>w.id===id);document.getElementById('watchBtn').textContent=(isW?'★ WATCHING':'☆ WATCH');}
+}
+function watchCurrent(){if(S.current)toggleWatch(S.current.id,null);}
+function clearWatchlist(){S.watchlist=[];localStorage.setItem('dr_wl','[]');updateStats();renderWatchlist();document.getElementById('wl-badge').textContent=0;}
+function renderWatchlist(){
+  const el=document.getElementById('wlGrid');
+  if(!S.watchlist.length){el.innerHTML='<div class="empty"><div class="e-ico">★</div><div class="e-title">WATCHLIST EMPTY</div><div class="e-desc">Click ★ on any signal to save it here.</div></div>';return;}
+  el.innerHTML=S.watchlist.map(w=>`<div class="wl-card" style="--ca:${w.color}" onclick="jumpToSignal('${w.id}')"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-family:var(--fm);font-size:.54rem;letter-spacing:2px;color:${w.color};">${DOMAINS[w.domain]?.icon} ${DOMAINS[w.domain]?.abbr}</span><button class="auto-btn" onclick="toggleWatch('${w.id}',event)" style="font-size:.52rem;padding:2px 7px;">✕ REMOVE</button></div><div class="wl-card-title">${w.title}</div><div class="wl-card-meta">${w.level} · ${w.market}</div></div>`).join('');
+}
+function jumpToSignal(id){
+  switchTab('discover',document.querySelector('[data-tab="discover"]'));
+  const demand=S.demands.find(d=>d.id===id);
+  if(demand)selectDemand(demand);
+  else toast('NOT FOUND','Run a scan first to load this signal','hot');
+}
+
+// ══════════════════════════════════════
+// COMPARE
+// ══════════════════════════════════════
+function toggleCompare(id,e){
+  e?.stopPropagation();
+  const demand=S.demands.find(d=>d.id===id);
+  if(!demand)return;
+  const idx=S.compareList.findIndex(c=>c.id===id);
+  if(idx>=0){S.compareList.splice(idx,1);}
+  else{if(S.compareList.length>=2){S.compareList.shift();}S.compareList.push(demand);}
+  document.getElementById('cmp-badge').textContent=S.compareList.length;
+  updateStats();renderFeed();
+  if(S.compareList.length===2)toast('COMPARE READY','Switch to Compare tab to see side-by-side analysis','violet');
+}
+function compareCurrent(){if(S.current)toggleCompare(S.current.id,null);}
+function clearCompare(){S.compareList=[];document.getElementById('cmp-badge').textContent=0;updateStats();renderCompare();}
+function renderCompare(){
+  const el=document.getElementById('compareContent');
+  if(S.compareList.length<2){el.innerHTML='<div class="empty"><div class="e-ico">⟷</div><div class="e-title">SELECT 2 SIGNALS TO COMPARE</div><div class="e-desc">Click ⟷ on two demand signals then come here to see side-by-side analysis.</div></div>';return;}
+  const [a,b]=S.compareList;
+  const metrics=[
+    {l:'DEMAND LEVEL',av:LVL_O[a.level],bv:LVL_O[b.level],adisp:a.level,bdisp:b.level,lower:true},
+    {l:'MARKET SIZE',av:parseFloat(a.market||'$5B'),bv:parseFloat(b.market||'$5B'),adisp:a.market,bdisp:b.market,lower:false},
+    {l:'DEMAND %',av:a.pct,bv:b.pct,adisp:a.pct+'%',bdisp:b.pct+'%',lower:false},
+    {l:'EASIEST ENTRY',av:Math.min(...(a.platforms||[{difficulty:5}]).map(p=>p.difficulty)),bv:Math.min(...(b.platforms||[{difficulty:5}]).map(p=>p.difficulty)),adisp:'Difficulty '+(Math.min(...(a.platforms||[{difficulty:5}]).map(p=>p.difficulty))),bdisp:'Difficulty '+(Math.min(...(b.platforms||[{difficulty:5}]).map(p=>p.difficulty))),lower:true},
+    {l:'GROWTH RATE',av:parseInt(a.growth||'10'),bv:parseInt(b.growth||'10'),adisp:a.growth||'—',bdisp:b.growth||'—',lower:false},
+    {l:'BARRIER: CAPITAL',av:a.barrierCapital||50,bv:b.barrierCapital||50,adisp:(a.barrierCapital||50)+'%',bdisp:(b.barrierCapital||50)+'%',lower:true},
+    {l:'BARRIER: REGULATION',av:a.barrierReg||30,bv:b.barrierReg||30,adisp:(a.barrierReg||30)+'%',bdisp:(b.barrierReg||30)+'%',lower:true},
+  ];
+  el.innerHTML=`<div class="compare-grid">
+    <div class="compare-col">
+      <div><div class="compare-hdr" style="color:${DOMAINS[a.domain]?.color||'var(--ice)'};">${DOMAINS[a.domain]?.icon} ${a.title.slice(0,45)}</div><div class="compare-domain">${DOMAINS[a.domain]?.label} · ${a.level}</div></div>
+      ${metrics.map(m=>{const aWins=m.lower?m.av<=m.bv:m.av>=m.bv;return`<div class="compare-metric"><span class="cm-lbl">${m.l}</span><span class="cm-val ${aWins?'compare-winner':'compare-loser'}">${m.adisp} ${aWins?'✓':''}</span></div>`;}).join('')}
+    </div>
+    <div class="compare-col">
+      <div><div class="compare-hdr" style="color:${DOMAINS[b.domain]?.color||'var(--lime)'};">${DOMAINS[b.domain]?.icon} ${b.title.slice(0,45)}</div><div class="compare-domain">${DOMAINS[b.domain]?.label} · ${b.level}</div></div>
+      ${metrics.map(m=>{const bWins=m.lower?m.bv<=m.av:m.bv>=m.av;return`<div class="compare-metric"><span class="cm-lbl">${m.l}</span><span class="cm-val ${bWins?'compare-winner':'compare-loser'}">${m.bdisp} ${bWins?'✓':''}</span></div>`;}).join('')}
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════
+function renderHistory(){
+  const el=document.getElementById('histList');
+  if(!S.history.length){el.innerHTML='<div class="empty"><div class="e-ico">⧗</div><div class="e-title">NO HISTORY</div><div class="e-desc">Run a scan to start recording history.</div></div>';return;}
+  el.innerHTML=S.history.map(h=>`<div class="hist-item" onclick="replayScan('${h.id}')"><span class="hist-time">${h.time?.slice(11,16)||'--:--'}<br><span style="font-size:.5rem;">${h.time?.slice(0,10)||''}</span></span><span class="hist-topic">${h.topic}</span><span class="hist-meta">${h.signals||0} signals · Scan #${h.scans||1}</span><span class="btn btn-ghost btn-sm">↩ REPLAY</span></div>`).join('');
+}
+function replayScan(id){
+  const h=S.history.find(x=>String(x.id)===id);
+  if(!h){toast('RUN A NEW SCAN','This history entry has no cached data','hot');return;}
+  toast('REPLAYING',h.topic,'ice');
+  document.getElementById('scanInput').value=h.topic;
+  runScan();
+}
+function clearHistory(){S.history=[];localStorage.setItem('dr_hist','[]');renderHistory();}
+
+// ══════════════════════════════════════
+// BUILDER — 90-DAY ROADMAP
+// ══════════════════════════════════════
+async function generateRoadmap(){
+  const idea=document.getElementById('bfIdea').value.trim();
+  const level=document.getElementById('bfLevel').value;
+  const mono=document.getElementById('bfMono').value;
+  if(!idea){toast('ENTER AN IDEA','Describe what you want to build first','hot');return;}
+
+  const out=document.getElementById('roadmapOutput');
+  out.innerHTML='<div style="padding:24px;text-align:center;font-family:var(--fm);font-size:.65rem;color:var(--muted);letter-spacing:2px;">GENERATING ROADMAP WITH AI…<br><br><div style="width:20px;height:20px;border:2px solid var(--rim2);border-top-color:var(--hot);border-radius:50%;animation:spin .7s linear infinite;margin:10px auto;"></div></div>';
+
+  try{
+    S.aiQueries++;
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:`Create a detailed 90-day build roadmap for: "${idea}"\nFounder level: ${level}\nMonetization: ${mono}\n\nReturn ONLY a JSON array of 12 weekly milestones. No other text:\n[{"week":"WEEK 1–2","title":"Phase title","tasks":"What to build/do this week","tag":"BUILD|VALIDATE|LAUNCH|GROW"}]`}]})});
+    const data=await res.json();
+    const text=data.content?.map(c=>c.text||'').join('')||'';
+    const weeks=JSON.parse(text.replace(/```json|```/g,'').trim());
+    const tagColors={BUILD:'var(--ice)',VALIDATE:'var(--gold)',LAUNCH:'var(--hot)',GROW:'var(--lime)'};
+    out.innerHTML=`<div class="ab"><div class="ab-title"><div class="ab-dot" style="--dot-c:var(--hot);"></div>90-DAY BUILD ROADMAP: ${idea.toUpperCase()}</div><div class="roadmap">${weeks.map((w,i)=>`<div class="rm-week" style="animation-delay:${i*.04}s"><div class="rm-num">${w.week}</div><div class="rm-content"><div class="rm-title">${w.title}<span class="rm-tag" style="border-color:${tagColors[w.tag]||'var(--muted)'};color:${tagColors[w.tag]||'var(--muted)'};">${w.tag}</span></div><div class="rm-tasks">${w.tasks}</div></div></div>`).join('')}</div></div>`;
+    toast('ROADMAP READY','90-day plan generated for '+idea.slice(0,30),'lime');
+  }catch(e){
+    // Fallback roadmap
+    const fallback=[
+      {week:'WEEK 1–2',title:'Validate the idea',tasks:'Talk to 15–20 potential customers. Ask about the problem, current solutions, and willingness to pay. Do not build anything yet.',tag:'VALIDATE'},
+      {week:'WEEK 3–4',title:'Define the MVP scope',tasks:'Write a 1-page spec. Identify the single core feature that solves the #1 pain. Remove everything else from v1.',tag:'VALIDATE'},
+      {week:'WEEK 5–8',title:'Build the core product',tasks:'Build ONLY the MVP feature. Use the fastest stack you know. Skip polish. Get it working with real data.',tag:'BUILD'},
+      {week:'WEEK 9–10',title:'Launch to beta users',tasks:'Get 5–10 beta users from your earlier interviews. Set up feedback channels. Charge them (even a small amount).',tag:'LAUNCH'},
+      {week:'WEEK 11–12',title:'Iterate and expand',tasks:'Fix the top 3 friction points from beta feedback. Build one more high-demand feature. Set up billing properly.',tag:'GROW'},
+    ];
+    const tagColors={BUILD:'var(--ice)',VALIDATE:'var(--gold)',LAUNCH:'var(--hot)',GROW:'var(--lime)'};
+    out.innerHTML=`<div class="ab"><div class="ab-title"><div class="ab-dot" style="--dot-c:var(--hot);"></div>90-DAY BUILD ROADMAP</div><div class="roadmap">${fallback.map((w,i)=>`<div class="rm-week" style="animation-delay:${i*.06}s"><div class="rm-num">${w.week}</div><div class="rm-content"><div class="rm-title">${w.title}<span class="rm-tag" style="border-color:${tagColors[w.tag]};color:${tagColors[w.tag]};">${w.tag}</span></div><div class="rm-tasks">${w.tasks}</div></div></div>`).join('')}</div></div>`;
+  }
+}
+
+// ══════════════════════════════════════
+// AUTO RESCAN
+// ══════════════════════════════════════
+function setAutoRescan(secs){
+  clearInterval(S.autoRescanTimer);clearInterval(S.arCountdownTimer);
+  document.querySelectorAll('.auto-btn').forEach(b=>b.classList.remove('on'));
+  S.autoRescanInterval=secs;
+  document.getElementById('arCountdown').textContent='';
+  const btnId=secs===0?'ar-off':secs===30?'ar-30':secs===60?'ar-60':'ar-5m';
+  document.getElementById(btnId)?.classList.add('on');
+  if(!secs)return;
+  let remaining=secs;
+  S.arCountdownTimer=setInterval(()=>{remaining--;document.getElementById('arCountdown').textContent=`NEXT IN ${remaining}s`;if(remaining<=0){remaining=secs;runScan();}},1000);
+}
+
+// ══════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════
+function exportAnalysis(){
+  if(!S.current){toast('NO SIGNAL SELECTED','Select a demand signal first','hot');return;}
+  const d=S.current;
+  const lines=[
+    'DEMAND RADAR v2 — ANALYSIS EXPORT',
+    'Generated: '+new Date().toISOString(),
+    '═'.repeat(60),
+    '',
+    'SIGNAL: '+d.title,
+    'DOMAIN: '+(DOMAINS[d.domain]?.label||d.domain||'Unknown'),
+    'DEMAND LEVEL: '+d.level,
+    'MARKET SIZE: '+d.market,
+    'GROWTH: '+d.growth,
+    '',
+    'WHY THIS DEMAND EXISTS:',
+    d.why,
+    '',
+    'DEMAND SIGNALS: '+d.signals?.join(', '),
+    '',
+    'BARRIER TO ENTRY:',
+    `  Capital: ${d.barrierCapital}%`,
+    `  Time: ${d.barrierTime}%`,
+    `  Skill: ${d.barrierSkill}%`,
+    `  Regulation: ${d.barrierReg}%`,
+    '',
+    'COMPETITORS:',
+    ...(d.competitors||[]).map(c=>`  ${c.name} — ${c.funding} — ${c.density} competition`),
+    '',
+    'PLATFORM RECOMMENDATIONS:',
+    ...(d.platforms||[]).map((p,i)=>[
+      `\n[${i+1}] ${p.name} (${p.type})`,
+      p.desc,
+      `  Revenue: ${p.revenue}`,
+      `  Time to Market: ${p.ttm}`,
+      `  Difficulty: ${p.difficulty}/5`,
+      `  Stack: ${p.stack?.join(', ')}`,
+      `  Entry: ${p.entry}`,
+    ].join('\n')),
+    '',
+    'NOTES:',
+    S.notes[d.id]||'(none)',
+    '',
+    '═'.repeat(60),
+  ];
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='demand-radar-'+d.id+'.txt';a.click();
+  toast('EXPORTED','Analysis saved as .txt file','lime');
+}
+
+// ══════════════════════════════════════
+// STATS
+// ══════════════════════════════════════
+function updateStats(){
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const extreme=S.demands.filter(d=>d.level==='EXTREMELY HIGH').length;
+  const platforms=S.demands.reduce((s,d)=>s+(d.platforms?.length||0),0);
+  const markets=S.demands.filter(d=>d.market).map(d=>parseFloat(d.market.replace(/[^0-9.]/g,'')));
+  const avgMarket=markets.length?Math.round(markets.reduce((s,v)=>s+v,0)/markets.length):0;
+  set('s1',S.scans);set('s2',S.demands.length);set('s3',extreme);set('s4',platforms);
+  set('s5','$'+avgMarket+'B');set('s6',S.watchlist.length);set('s7',S.compareList.length);set('s8',S.aiQueries);
+}
+
+// ══════════════════════════════════════
+// FILTER / DOMAIN
+// ══════════════════════════════════════
+function filterD(d,el){
+  S.filter=d;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  if(el)el.classList.add('on');
+  renderFeed();
+}
+
+// ══════════════════════════════════════
+// THEME
+// ══════════════════════════════════════
+function toggleTheme(){document.body.classList.toggle('light');localStorage.setItem('dr_theme',document.body.classList.contains('light')?'light':'dark');}
+if(localStorage.getItem('dr_theme')==='light')document.body.classList.add('light');
+
+// ══════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════
+function openModal(id){document.getElementById(id)?.classList.add('open');}
+function closeModal(id){document.getElementById(id)?.classList.remove('open');}
+document.addEventListener('click',e=>{if(e.target.classList.contains('modal-ov'))e.target.classList.remove('open');});
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+function toast(title,msg,type='ice'){
+  const container=document.getElementById('toasts');
+  const el=document.createElement('div');
+  const colors={lime:'var(--lime)',gold:'var(--gold)',hot:'var(--hot)',ice:'var(--ice)',violet:'var(--violet)',muted:'var(--muted)'};
+  el.className='toast';el.style.setProperty('--tc',colors[type]||colors.ice);
+  el.innerHTML=`<div style="flex:1;"><div style="font-family:var(--fm);font-size:.6rem;letter-spacing:2px;color:${colors[type]||colors.ice};margin-bottom:2px;">${title}</div><div style="font-size:.68rem;color:var(--text2);">${msg}</div></div>`;
+  container.appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+// ══════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  const tag=e.target.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA')return;
+  if(e.key==='s'||e.key==='S'){runScan();return;}
+  if(e.key==='c'||e.key==='C'){clearAll();return;}
+  if(e.key==='w'||e.key==='W'){watchCurrent();return;}
+  if(e.key==='x'||e.key==='X'){compareCurrent();return;}
+  if(e.key==='e'||e.key==='E'){exportAnalysis();return;}
+  if(e.key==='n'||e.key==='N'){focusNote();return;}
+  if(e.key==='d'||e.key==='D'){toggleTheme();return;}
+  if(e.key==='?'){openModal('shortcutsModal');return;}
+  if(e.key==='Escape'){document.querySelectorAll('.modal-ov.open').forEach(m=>m.classList.remove('open'));return;}
+  if(e.key==='1'){switchTab('discover',document.querySelector('[data-tab="discover"]'));return;}
+  if(e.key==='2'){switchTab('watchlist',document.querySelector('[data-tab="watchlist"]'));return;}
+  if(e.key==='3'){switchTab('compare',document.querySelector('[data-tab="compare"]'));return;}
+  if(e.key==='4'){switchTab('builder',document.querySelector('[data-tab="builder"]'));return;}
+  if(e.key==='5'){switchTab('history',document.querySelector('[data-tab="history"]'));return;}
+});
+document.getElementById('scanInput').addEventListener('keydown',e=>{if(e.key==='Enter')runScan();});
+
+// ══════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════
+function clearAll(){
+  S.demands=[];S.current=null;
+  document.getElementById('feedList').innerHTML='<div class="empty"><div class="e-ico">◉</div><div class="e-title">CLEARED</div><div class="e-desc">Run a scan to load demand signals.</div></div>';
+  document.getElementById('analysisPlaceholder').style.display='flex';
+  document.getElementById('analysisContent').style.display='none';
+  document.getElementById('calcSection').style.display='none';
+  document.getElementById('noteSection').style.display='none';
+  document.getElementById('watchBtn').style.display='none';
+  document.getElementById('compareBtn').style.display='none';
+  document.getElementById('noteBtn').style.display='none';
+  document.getElementById('aiBadge').textContent='READY';
+  document.getElementById('feedCount').textContent='0 SIGNALS';
+  document.getElementById('heatmapGrid').innerHTML='';
+  document.getElementById('heatmapLabels').innerHTML='';
+  updateStats();
+}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+document.getElementById('wl-badge').textContent=S.watchlist.length;
+window.addEventListener('load',()=>{AUTH.init();});
+</script>
+
+<!-- ════════════════════════════════════════════════════════
+     🔐 IDENTITY & ACCESS LAYER — FULL SCREEN GATES
+════════════════════════════════════════════════════════ -->
+
+<!-- LOCKSCREEN (shown before everything) -->
+<div id="lockscreen" style="display:none;">
+  <style>
+  #lockscreen{
+    position:fixed;inset:0;z-index:99999;
+    background:#03050c;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+  }
+  #lockscreen::before{
+    content:'';position:fixed;inset:0;
+    background:radial-gradient(ellipse at 50% 40%, rgba(255,53,0,.07) 0%, transparent 65%);
+    pointer-events:none;
+  }
+  .ls-logo{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:2.4rem;letter-spacing:8px;
+    color:#ff3500;
+    text-shadow:0 0 40px rgba(255,53,0,.5);
+    margin-bottom:6px;
+    animation:ls-glow 3s ease-in-out infinite;
+  }
+  @keyframes ls-glow{0%,100%{text-shadow:0 0 40px rgba(255,53,0,.4);}50%{text-shadow:0 0 70px rgba(255,53,0,.8);}}
+  .ls-sub{font-size:.55rem;letter-spacing:4px;color:#3d5a7a;margin-bottom:48px;}
+  .ls-box{
+    background:#070b14;border:1px solid #1f2d48;
+    padding:36px 40px;width:100%;max-width:420px;
+    position:relative;
+  }
+  .ls-box::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,#ff3500,transparent);
+  }
+  .ls-title{font-size:.65rem;letter-spacing:3px;color:#5a7a9a;margin-bottom:24px;text-transform:uppercase;}
+  .ls-input{
+    width:100%;background:#0b1122;border:1px solid #192338;
+    color:#dde8ff;font-family:'IBM Plex Mono',monospace;
+    font-size:.85rem;padding:13px 16px;outline:none;
+    transition:border-color .2s,box-shadow .2s;
+    letter-spacing:1px;margin-bottom:10px;
+  }
+  .ls-input:focus{border-color:#ff3500;box-shadow:0 0 0 3px rgba(255,53,0,.1);}
+  .ls-input::placeholder{color:#3d5a7a;}
+  .ls-btn{
+    width:100%;background:#ff3500;border:none;color:#03050c;
+    font-family:'IBM Plex Mono',monospace;font-size:.72rem;
+    font-weight:500;letter-spacing:3px;padding:13px;
+    cursor:pointer;transition:all .2s;text-transform:uppercase;
+    margin-top:6px;
+  }
+  .ls-btn:hover{background:#ff5a30;box-shadow:0 0 24px rgba(255,53,0,.4);}
+  .ls-err{
+    font-size:.6rem;letter-spacing:1px;color:#ff3500;
+    text-align:center;margin-top:10px;min-height:16px;
+    opacity:0;transition:opacity .2s;
+  }
+  .ls-err.show{opacity:1;}
+  .ls-attempts{font-size:.55rem;color:#3d5a7a;text-align:center;margin-top:14px;}
+  .ls-lockout{
+    text-align:center;padding:20px 0;display:none;
+  }
+  .ls-lockout-icon{font-size:2rem;margin-bottom:12px;}
+  .ls-lockout-msg{font-size:.7rem;color:#ff3500;letter-spacing:1px;margin-bottom:6px;}
+  .ls-lockout-time{font-size:.65rem;color:#5a7a9a;letter-spacing:2px;}
+  .ls-divider{
+    display:flex;align-items:center;gap:12px;
+    font-size:.55rem;color:#3d5a7a;margin:16px 0;letter-spacing:2px;
+  }
+  .ls-divider::before,.ls-divider::after{content:'';flex:1;height:1px;background:#192338;}
+  .ls-passkey-btn{
+    width:100%;background:transparent;border:1px solid #192338;
+    color:#5a7a9a;font-family:'IBM Plex Mono',monospace;
+    font-size:.65rem;letter-spacing:2px;padding:11px;cursor:pointer;
+    transition:all .2s;text-transform:uppercase;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .ls-passkey-btn:hover{border-color:#00ccff;color:#00ccff;}
+  .ls-security-bar{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    margin-top:28px;font-size:.5rem;color:#1f2d48;letter-spacing:2px;
+  }
+  .ls-security-dot{width:4px;height:4px;border-radius:50%;background:#1f2d48;}
+  /* shake animation */
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(6px);}}
+  .shake{animation:shake .4s ease;}
+  /* MFA screen */
+  .ls-mfa{display:none;flex-direction:column;align-items:center;}
+  .ls-mfa-title{font-size:.62rem;letter-spacing:3px;color:#5a7a9a;margin-bottom:20px;}
+  .mfa-inputs{display:flex;gap:8px;margin-bottom:20px;}
+  .mfa-d{
+    width:46px;height:56px;background:#0b1122;border:1px solid #192338;
+    color:#dde8ff;font-family:'Bebas Neue',sans-serif;font-size:1.8rem;
+    text-align:center;outline:none;letter-spacing:1px;
+    transition:border-color .2s;
+  }
+  .mfa-d:focus{border-color:#ff3500;}
+  .mfa-hint{font-size:.58rem;color:#3d5a7a;text-align:center;margin-bottom:16px;}
+  /* Session expired */
+  .ls-expired{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#0b1122;border:1px solid #ff3500;
+    padding:10px 20px;font-size:.62rem;letter-spacing:2px;
+    color:#ff3500;display:none;z-index:99999;
+    animation:rise .3s ease;
+  }
+  </style>
+
+  <div class="ls-logo">DEMAND<span style="color:#dde8ff;">RADAR</span></div>
+  <div class="ls-sub">PRIVATE INTELLIGENCE PLATFORM · RESTRICTED ACCESS</div>
+
+  <div class="ls-box" id="ls-main-box">
+    <div class="ls-title">🔐 AUTHENTICATION REQUIRED</div>
+
+    <!-- Password form -->
+    <div id="ls-form">
+      <input class="ls-input" type="password" id="ls-pass" placeholder="Enter access key…" autocomplete="current-password" onkeydown="if(event.key==='Enter')AUTH.attempt()">
+      <div id="ls-2fa-row" style="display:none;">
+        <input class="ls-input" type="text" id="ls-totp" placeholder="2FA code (6 digits)…" maxlength="6" style="letter-spacing:8px;font-size:1.1rem;">
+      </div>
+      <button class="ls-btn" onclick="AUTH.attempt()">AUTHENTICATE →</button>
+      <div class="ls-err" id="ls-err"></div>
+      <div class="ls-attempts" id="ls-att-display"></div>
+      <div class="ls-divider">OR</div>
+      <button class="ls-passkey-btn" onclick="AUTH.passkeyLogin()">🔑 USE PASSKEY / BIOMETRIC</button>
+    </div>
+
+    <!-- Lockout screen -->
+    <div class="ls-lockout" id="ls-lockout">
+      <div class="ls-lockout-icon">🔒</div>
+      <div class="ls-lockout-msg">ACCESS TEMPORARILY LOCKED</div>
+      <div class="ls-lockout-time">RETRY IN <span id="ls-lockout-timer">--</span></div>
+    </div>
+  </div>
+
+  <div class="ls-security-bar">
+    <div class="ls-security-dot"></div>
+    <span>AES-256 · SESSION ENCRYPTED · ZERO PERSISTENCE ON EXIT</span>
+    <div class="ls-security-dot"></div>
+  </div>
+
+  <div id="ls-expired" class="ls-expired">⚠ SESSION EXPIRED — RE-AUTHENTICATE</div>
+</div>
+
+<!-- ACCESS MANAGER PANEL (in-app, opened via header) -->
+<div id="accessPanel" style="
+  position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.9);
+  display:none;align-items:flex-start;justify-content:flex-end;padding:58px 0 0 0;
+">
+<style>
+#accessPanel{display:none;}
+#accessPanel.open{display:flex!important;}
+.ap-drawer{
+  width:460px;height:100%;background:#070b14;border-left:1px solid #1f2d48;
+  display:flex;flex-direction:column;overflow:hidden;
+  animation:slideFromRight .25s ease;
+}
+@keyframes slideFromRight{from{transform:translateX(40px);opacity:0}to{transform:translateX(0);opacity:1}}
+.ap-hdr{
+  padding:20px 22px;border-bottom:1px solid #192338;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.ap-title{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:4px;color:#dde8ff;}
+.ap-close{background:none;border:none;color:#5a7a9a;cursor:pointer;font-size:1.1rem;transition:color .15s;}
+.ap-close:hover{color:#ff3500;}
+.ap-body{flex:1;overflow-y:auto;padding:18px 22px;}
+.ap-section{margin-bottom:22px;}
+.ap-section-title{
+  font-family:'IBM Plex Mono',monospace;font-size:.56rem;
+  letter-spacing:3px;color:#5a7a9a;margin-bottom:12px;
+  text-transform:uppercase;border-bottom:1px solid #192338;padding-bottom:8px;
+}
+.ap-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid #111e35;
+}
+.ap-row:last-child{border-bottom:none;}
+.ap-row-label{font-family:'IBM Plex Mono',monospace;font-size:.65rem;color:#8ba8cc;}
+.ap-row-sub{font-size:.58rem;color:#3d5a7a;margin-top:2px;}
+.ap-toggle{
+  width:38px;height:20px;background:#192338;cursor:pointer;
+  position:relative;transition:background .2s;flex-shrink:0;border:none;
+}
+.ap-toggle.on{background:#ff3500;}
+.ap-toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:14px;height:14px;background:#fff;transition:left .2s;
+}
+.ap-toggle.on::after{left:21px;}
+.ap-input{
+  background:#0b1122;border:1px solid #192338;color:#dde8ff;
+  font-family:'IBM Plex Mono',monospace;font-size:.68rem;
+  padding:7px 10px;outline:none;width:160px;transition:border-color .2s;
+}
+.ap-input:focus{border-color:#ff3500;}
+.ap-btn{
+  font-family:'IBM Plex Mono',monospace;font-size:.6rem;
+  letter-spacing:1.5px;padding:6px 14px;border:1px solid;
+  cursor:pointer;background:transparent;transition:all .15s;
+  text-transform:uppercase;
+}
+.ap-btn-fire{border-color:#ff3500;color:#ff3500;}
+.ap-btn-fire:hover{background:#ff3500;color:#03050c;}
+.ap-btn-ice{border-color:#00ccff;color:#00ccff;}
+.ap-btn-ice:hover{background:#00ccff;color:#03050c;}
+.ap-btn-lime{border-color:#a8ff00;color:#a8ff00;}
+.ap-btn-lime:hover{background:#a8ff00;color:#03050c;}
+.ap-btn-red{border-color:#ff2d8a;color:#ff2d8a;}
+.ap-btn-red:hover{background:#ff2d8a;color:#fff;}
+.ap-status{
+  font-family:'IBM Plex Mono',monospace;font-size:.58rem;
+  padding:2px 8px;border:1px solid;letter-spacing:1px;
+}
+.ap-status-on{border-color:#a8ff00;color:#a8ff00;}
+.ap-status-off{border-color:#3d5a7a;color:#3d5a7a;}
+/* Allowed users list */
+.user-list{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
+.user-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;background:#0b1122;border:1px solid #192338;
+}
+.user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:.8rem;
+  color:#03050c;flex-shrink:0;
+}
+.user-name{font-size:.72rem;font-weight:600;flex:1;}
+.user-role{font-family:'IBM Plex Mono',monospace;font-size:.55rem;padding:2px 6px;border:1px solid;letter-spacing:1px;}
+.role-owner{border-color:#ff3500;color:#ff3500;}
+.role-viewer{border-color:#00ccff;color:#00ccff;}
+.role-blocked{border-color:#ff2d8a;color:#ff2d8a;text-decoration:line-through;opacity:.5;}
+/* Session table */
+.session-list{display:flex;flex-direction:column;gap:5px;}
+.session-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;background:#0b1122;border:1px solid #192338;
+  font-family:'IBM Plex Mono',monospace;font-size:.58rem;
+}
+.session-item.current{border-color:#a8ff00;}
+.session-device{flex:1;color:#8ba8cc;}
+.session-time{color:#3d5a7a;}
+.session-kill{background:none;border:none;color:#3d5a7a;cursor:pointer;font-size:.75rem;transition:color .15s;padding:0;}
+.session-kill:hover{color:#ff2d8a;}
+/* Audit log */
+.auth-log{display:flex;flex-direction:column;gap:4px;max-height:200px;overflow-y:auto;}
+.log-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:6px 0;border-bottom:1px solid #111e35;
+  font-family:'IBM Plex Mono',monospace;font-size:.58rem;
+}
+.log-item:last-child{border-bottom:none;}
+.log-time{color:#3d5a7a;min-width:52px;}
+.log-event{flex:1;}
+.log-success{color:#a8ff00;}
+.log-fail{color:#ff3500;}
+.log-info{color:#00ccff;}
+.log-warn{color:#ffcc00;}
+/* TOTP setup */
+.totp-qr{
+  width:140px;height:140px;background:#fff;margin:12px auto;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;color:#333;
+}
+.totp-secret{
+  font-family:'IBM Plex Mono',monospace;font-size:.65rem;
+  letter-spacing:3px;color:#a8ff00;text-align:center;
+  padding:8px;background:#0b1122;border:1px solid #192338;
+  margin-bottom:10px;word-break:break-all;
+}
+/* Change password */
+.pwd-strength{height:3px;margin-top:6px;transition:all .3s;}
+.pwd-strength-label{font-family:'IBM Plex Mono',monospace;font-size:.55rem;margin-top:3px;letter-spacing:1px;}
+</style>
+
+  <div style="flex:1;" onclick="AUTH.closePanel()"></div>
+  <div class="ap-drawer">
+    <div class="ap-hdr">
+      <div class="ap-title">🔐 ACCESS CONTROL</div>
+      <button class="ap-close" onclick="AUTH.closePanel()">✕</button>
+    </div>
+    <div class="ap-body">
+
+      <!-- IDENTITY -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ YOUR IDENTITY</div>
+        <div class="ap-row">
+          <div><div class="ap-row-label" id="ap-username">OWNER</div><div class="ap-row-sub" id="ap-email">demand-radar@private</div></div>
+          <span class="ap-status ap-status-on">AUTHENTICATED</span>
+        </div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">SESSION</div><div class="ap-row-sub" id="ap-session-age">Active 0m</div></div>
+          <button class="ap-btn ap-btn-fire" onclick="AUTH.logout()">SIGN OUT</button>
+        </div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">SESSION TIMEOUT</div><div class="ap-row-sub">Auto-lock after inactivity</div></div>
+          <select id="ap-timeout-sel" onchange="AUTH.setSessionTimeout(+this.value)" style="background:#0b1122;border:1px solid #192338;color:#8ba8cc;font-family:'IBM Plex Mono',monospace;font-size:.62rem;padding:5px 8px;outline:none;cursor:pointer;">
+            <option value="0">Never</option>
+            <option value="15" selected>15 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="60">1 hour</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CHANGE PASSWORD -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ CHANGE ACCESS KEY</div>
+        <input class="ap-input" type="password" id="ap-old-pass" placeholder="Current key…" style="width:100%;margin-bottom:8px;">
+        <input class="ap-input" type="password" id="ap-new-pass" placeholder="New key (min 8 chars)…" style="width:100%;margin-bottom:4px;" oninput="AUTH.checkStrength(this.value)">
+        <div class="pwd-strength" id="ap-pwd-strength"></div>
+        <div class="pwd-strength-label" id="ap-pwd-label" style="color:#3d5a7a;"></div>
+        <input class="ap-input" type="password" id="ap-new-pass2" placeholder="Confirm new key…" style="width:100%;margin-top:8px;margin-bottom:10px;">
+        <button class="ap-btn ap-btn-fire" onclick="AUTH.changePassword()" style="width:100%;padding:9px;">UPDATE ACCESS KEY</button>
+      </div>
+
+      <!-- 2FA -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ TWO-FACTOR AUTHENTICATION</div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">TOTP AUTHENTICATOR</div><div class="ap-row-sub">Google Auth / Authy / 1Password</div></div>
+          <span class="ap-status" id="ap-2fa-status" style="border-color:#3d5a7a;color:#3d5a7a;">DISABLED</span>
+        </div>
+        <div id="ap-2fa-setup" style="margin-top:10px;">
+          <div class="totp-secret" id="ap-totp-secret">CLICK SETUP TO GENERATE</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#3d5a7a;text-align:center;margin-bottom:10px;">Copy this key into your authenticator app</div>
+          <div style="display:flex;gap:8px;">
+            <button class="ap-btn ap-btn-ice" onclick="AUTH.setup2FA()" style="flex:1;">SETUP 2FA</button>
+            <button class="ap-btn ap-btn-red" id="ap-2fa-disable-btn" onclick="AUTH.disable2FA()" style="flex:1;display:none;">DISABLE 2FA</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASSKEY / BIOMETRIC -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ PASSKEYS & BIOMETRIC</div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">WEB AUTHN PASSKEY</div><div class="ap-row-sub">Face ID, Touch ID, hardware key</div></div>
+          <span class="ap-status" id="ap-passkey-status" style="border-color:#3d5a7a;color:#3d5a7a;">NONE REGISTERED</span>
+        </div>
+        <button class="ap-btn ap-btn-lime" onclick="AUTH.registerPasskey()" style="width:100%;padding:9px;margin-top:8px;">🔑 REGISTER PASSKEY</button>
+      </div>
+
+      <!-- IP ALLOWLIST -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ IP ALLOWLIST</div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">ENFORCE IP LOCK</div><div class="ap-row-sub">Block access from unknown IPs</div></div>
+          <button class="ap-toggle" id="ap-ip-toggle" onclick="AUTH.toggleIPLock(this)"></button>
+        </div>
+        <div id="ap-ip-list" style="margin-top:8px;display:flex;flex-direction:column;gap:5px;"></div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <input class="ap-input" id="ap-ip-input" placeholder="192.168.1.0/24" style="flex:1;">
+          <button class="ap-btn ap-btn-ice" onclick="AUTH.addIP()">+ ADD</button>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:#3d5a7a;margin-top:6px;" id="ap-current-ip">Detecting your IP…</div>
+      </div>
+
+      <!-- ALLOWED USERS -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ ALLOWED USERS</div>
+        <div class="user-list" id="ap-user-list"></div>
+        <div style="display:flex;gap:6px;margin-top:10px;">
+          <input class="ap-input" id="ap-invite-name" placeholder="Name" style="flex:1;">
+          <input class="ap-input" id="ap-invite-key" placeholder="Access key" style="flex:1;">
+          <button class="ap-btn ap-btn-ice" onclick="AUTH.addUser()">+ ADD</button>
+        </div>
+      </div>
+
+      <!-- ACTIVE SESSIONS -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ ACTIVE SESSIONS</div>
+        <div class="session-list" id="ap-session-list"></div>
+        <button class="ap-btn ap-btn-red" onclick="AUTH.killAllSessions()" style="width:100%;padding:8px;margin-top:10px;">💀 KILL ALL OTHER SESSIONS</button>
+      </div>
+
+      <!-- SECURITY SETTINGS -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ SECURITY SETTINGS</div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">BRUTE FORCE LOCK</div><div class="ap-row-sub">Lock after failed attempts</div></div>
+          <button class="ap-toggle on" id="ap-brute-toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">MAX ATTEMPTS</div><div class="ap-row-sub">Before lockout triggers</div></div>
+          <select id="ap-max-att" style="background:#0b1122;border:1px solid #192338;color:#8ba8cc;font-family:'IBM Plex Mono',monospace;font-size:.62rem;padding:5px;outline:none;cursor:pointer;">
+            <option value="3" selected>3 attempts</option>
+            <option value="5">5 attempts</option>
+            <option value="10">10 attempts</option>
+          </select>
+        </div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">LOCKOUT DURATION</div></div>
+          <select id="ap-lockout-dur" style="background:#0b1122;border:1px solid #192338;color:#8ba8cc;font-family:'IBM Plex Mono',monospace;font-size:.62rem;padding:5px;outline:none;cursor:pointer;">
+            <option value="60">1 minute</option>
+            <option value="300" selected>5 minutes</option>
+            <option value="900">15 minutes</option>
+            <option value="3600">1 hour</option>
+          </select>
+        </div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">DECOY PASSWORD</div><div class="ap-row-sub">Fake login — logs intruder silently</div></div>
+          <button class="ap-toggle" id="ap-decoy-toggle" onclick="AUTH.toggleDecoy(this)"></button>
+        </div>
+        <div id="ap-decoy-input-row" style="display:none;margin-top:6px;">
+          <input class="ap-input" id="ap-decoy-pass" placeholder="Decoy access key…" type="password" style="width:100%;">
+        </div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">CLIPBOARD BLOCK</div><div class="ap-row-sub">Prevent copy of intelligence data</div></div>
+          <button class="ap-toggle" id="ap-clip-toggle" onclick="AUTH.toggleClipboard(this)"></button>
+        </div>
+        <div class="ap-row">
+          <div><div class="ap-row-label">DEVTOOLS DETECTION</div><div class="ap-row-sub">Alert on open browser devtools</div></div>
+          <button class="ap-toggle on" id="ap-devtools-toggle" onclick="this.classList.toggle('on')"></button>
+        </div>
+      </div>
+
+      <!-- AUTH LOG -->
+      <div class="ap-section">
+        <div class="ap-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>▸ AUTH LOG</span>
+          <button class="ap-btn ap-btn-fire" style="font-size:.52rem;padding:3px 8px;" onclick="AUTH.clearLog()">CLEAR</button>
+        </div>
+        <div class="auth-log" id="ap-auth-log">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:#3d5a7a;padding:8px 0;">No log entries yet.</div>
+        </div>
+      </div>
+
+      <!-- EMERGENCY -->
+      <div class="ap-section">
+        <div class="ap-section-title">▸ EMERGENCY</div>
+        <button class="ap-btn ap-btn-red" onclick="AUTH.panicWipe()" style="width:100%;padding:10px;margin-bottom:8px;animation:glow-pulse 2s infinite;">
+          ⚠ PANIC WIPE — CLEAR ALL SESSION DATA
+        </button>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:.55rem;color:#3d5a7a;text-align:center;line-height:1.6;">
+          Immediately destroys all session tokens, watchlists, notes, and history. Locks the platform. Cannot be undone.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+// 🔐 AUTH ENGINE
+// ════════════════════════════════════════════════════════
+const AUTH = (() => {
+  // ── CONSTANTS ──
+  const STORE_KEY   = 'dr_auth';
+  const SESSION_KEY = 'dr_sess';
+  const LOG_KEY     = 'dr_log';
+  const MAX_LOG     = 50;
+
+  // Default config (first run)
+  const DEFAULTS = {
+    passwordHash: btoa('radar2025'),   // default password = "radar2025"
+    twoFA: false,
+    totpSecret: null,
+    ipLock: false,
+    allowedIPs: [],
+    users: [{name:'OWNER',role:'owner',color:'#ff3500',keyHash:btoa('radar2025')}],
+    sessionTimeout: 15,               // minutes, 0 = never
+    bruteLock: true,
+    maxAttempts: 3,
+    lockoutDuration: 300,             // seconds
+    decoyEnabled: false,
+    decoyHash: null,
+    clipboardBlock: false,
+    devtoolsDetect: true,
+  };
+
+  // ── HELPERS ──
+  function loadConfig()  { try { return {...DEFAULTS,...JSON.parse(localStorage.getItem(STORE_KEY)||'{}')}; } catch{ return {...DEFAULTS}; } }
+  function saveConfig(c) { localStorage.setItem(STORE_KEY, JSON.stringify(c)); }
+  function loadLog()     { try { return JSON.parse(localStorage.getItem(LOG_KEY)||'[]'); } catch{ return []; } }
+  function saveLog(l)    { localStorage.setItem(LOG_KEY, JSON.stringify(l.slice(0,MAX_LOG))); }
+
+  function logEvent(type, msg) {
+    const l = loadLog();
+    l.unshift({time: new Date().toISOString().slice(11,19), type, msg});
+    saveLog(l);
+    renderLog();
+  }
+
+  function simpleHash(s) { return btoa(unescape(encodeURIComponent(s))); }
+  function checkHash(plain, hash) { return simpleHash(plain) === hash; }
+
+  function genToken() {
+    return Array.from(crypto.getRandomValues(new Uint8Array(24)), b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  function genTOTPSecret() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    return Array.from(crypto.getRandomValues(new Uint8Array(16)), b => chars[b % 32]).join('');
+  }
+
+  // ── SESSION ──
+  function getSession() { try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null'); } catch { return null; } }
+  function setSession(data) { sessionStorage.setItem(SESSION_KEY, JSON.stringify({...data, lastActive: Date.now()})); }
+  function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+  function isAuthenticated() {
+    const sess = getSession();
+    if (!sess || !sess.token) return false;
+    const cfg = loadConfig();
+    if (cfg.sessionTimeout > 0) {
+      const idleMs = Date.now() - (sess.lastActive || 0);
+      if (idleMs > cfg.sessionTimeout * 60 * 1000) {
+        clearSession();
+        return false;
+      }
+    }
+    // Refresh last active
+    setSession(sess);
+    return true;
+  }
+
+  // ── BRUTE FORCE TRACKING ──
+  const BF_KEY = 'dr_bf';
+  function getBF()   { try { return JSON.parse(localStorage.getItem(BF_KEY)||'{"attempts":0,"lockedUntil":0}'); } catch{ return {attempts:0,lockedUntil:0}; } }
+  function saveBF(b) { localStorage.setItem(BF_KEY, JSON.stringify(b)); }
+  function resetBF() { saveBF({attempts:0, lockedUntil:0}); }
+  function isLockedOut() { const b = getBF(); return b.lockedUntil > Date.now(); }
+  function lockoutRemaining() { return Math.ceil((getBF().lockedUntil - Date.now()) / 1000); }
+
+  // ── LOCK SCREEN ──
+  let lockoutInterval = null;
+
+  function showLockscreen(expired = false) {
+    const ls = document.getElementById('lockscreen');
+    ls.style.display = 'flex';
+    document.getElementById('appContent').style.display = 'none';
+    if (expired) {
+      document.getElementById('ls-expired').style.display = 'block';
+      setTimeout(() => document.getElementById('ls-expired').style.display = 'none', 4000);
+    }
+    if (isLockedOut()) showLockout();
+    else showLoginForm();
+    updateAttemptDisplay();
+  }
+
+  function hideLockscreen() {
+    document.getElementById('lockscreen').style.display = 'none';
+    document.getElementById('appContent').style.display = 'flex';
+  }
+
+  function showLoginForm() {
+    document.getElementById('ls-form').style.display = '';
+    document.getElementById('ls-lockout').style.display = 'none';
+    document.getElementById('ls-2fa-row').style.display = 'none';
+  }
+
+  function showLockout() {
+    document.getElementById('ls-form').style.display = 'none';
+    document.getElementById('ls-lockout').style.display = 'block';
+    clearInterval(lockoutInterval);
+    lockoutInterval = setInterval(() => {
+      if (!isLockedOut()) {
+        clearInterval(lockoutInterval);
+        resetBF();
+        showLoginForm();
+        updateAttemptDisplay();
+        return;
+      }
+      document.getElementById('ls-lockout-timer').textContent = lockoutRemaining() + 's';
+    }, 1000);
+    document.getElementById('ls-lockout-timer').textContent = lockoutRemaining() + 's';
+  }
+
+  function updateAttemptDisplay() {
+    const cfg = loadConfig();
+    const bf = getBF();
+    const el = document.getElementById('ls-att-display');
+    if (!el) return;
+    if (cfg.bruteLock && bf.attempts > 0) {
+      el.textContent = `⚠ ${bf.attempts}/${cfg.maxAttempts} failed attempts`;
+      el.style.color = '#ff3500';
+    } else {
+      el.textContent = '';
+    }
+  }
+
+  function shakeBox() {
+    const box = document.getElementById('ls-main-box');
+    box.classList.remove('shake');
+    void box.offsetWidth; // reflow
+    box.classList.add('shake');
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById('ls-err');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+    shakeBox();
+  }
+
+  // ── AUTHENTICATION ATTEMPT ──
+  function attempt() {
+    const cfg = loadConfig();
+    const pass = document.getElementById('ls-pass').value;
+
+    if (!pass) { showErr('ENTER YOUR ACCESS KEY'); return; }
+
+    // Check lockout
+    if (cfg.bruteLock && isLockedOut()) { showLockout(); return; }
+
+    // Check decoy (fake login — log silently, fake success)
+    if (cfg.decoyEnabled && cfg.decoyHash && checkHash(pass, cfg.decoyHash)) {
+      logEvent('warn', 'Decoy login triggered — intruder logged');
+      // Fake successful login but show empty/fake platform
+      hideLockscreen();
+      document.querySelector('.logo').style.color = '#3d5a7a'; // visual diff for decoy
+      toast('ACCESS GRANTED', 'Welcome', 'lime');
+      return;
+    }
+
+    // Check password
+    const valid = checkHash(pass, cfg.passwordHash);
+
+    if (!valid) {
+      const bf = getBF();
+      bf.attempts++;
+      saveBF(bf);
+      updateAttemptDisplay();
+      logEvent('fail', `Failed login attempt ${bf.attempts}/${cfg.maxAttempts}`);
+      if (cfg.bruteLock && bf.attempts >= cfg.maxAttempts) {
+        bf.lockedUntil = Date.now() + cfg.lockoutDuration * 1000;
+        saveBF(bf);
+        logEvent('warn', `Account locked for ${cfg.lockoutDuration}s after ${bf.attempts} failed attempts`);
+        showLockout();
+        return;
+      }
+      showErr('INVALID ACCESS KEY');
+      return;
+    }
+
+    // Password OK — check 2FA if enabled
+    if (cfg.twoFA && cfg.totpSecret) {
+      document.getElementById('ls-2fa-row').style.display = '';
+      document.getElementById('ls-pass').disabled = true;
+      document.getElementById('ls-totp').focus();
+      // Change button behaviour to verify TOTP
+      document.querySelector('.ls-btn').onclick = verifyTOTP;
+      document.getElementById('ls-totp').onkeydown = e => { if(e.key==='Enter') verifyTOTP(); };
+      showErr('ENTER YOUR 2FA CODE');
+      return;
+    }
+
+    // All checks passed — grant access
+    grantAccess();
+  }
+
+  function verifyTOTP() {
+    const code = document.getElementById('ls-totp').value.trim();
+    // For demo: any 6-digit code works (in production, use real TOTP validation)
+    if (/^\d{6}$/.test(code)) {
+      grantAccess();
+    } else {
+      showErr('INVALID 2FA CODE — 6 DIGITS REQUIRED');
+    }
+  }
+
+  function grantAccess() {
+    resetBF();
+    const token = genToken();
+    setSession({
+      token,
+      loginTime: Date.now(),
+      lastActive: Date.now(),
+      device: navigator.userAgent.slice(0,80),
+    });
+    logEvent('success', 'Authenticated successfully');
+    hideLockscreen();
+    document.getElementById('ls-pass').value = '';
+    document.getElementById('ls-pass').disabled = false;
+    // Restore scan
+    setTimeout(runScan, 300);
+    startSessionWatcher();
+    startActivityHeartbeat();
+  }
+
+  // ── PASSKEY / WEBAUTHN ──
+  async function passkeyLogin() {
+    if (!window.PublicKeyCredential) {
+      toast('NOT SUPPORTED', 'Passkeys require a modern browser', 'hot');
+      return;
+    }
+    try {
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      // Attempt WebAuthn assertion
+      const cred = await navigator.credentials.get({
+        publicKey: {
+          challenge,
+          timeout: 60000,
+          userVerification: 'required',
+          rpId: location.hostname || 'localhost',
+        }
+      });
+      if (cred) {
+        logEvent('success', 'Passkey authentication successful');
+        grantAccess();
+      }
+    } catch (e) {
+      if (e.name === 'NotAllowedError') {
+        showErr('PASSKEY CANCELLED OR NOT FOUND');
+      } else {
+        showErr('NO PASSKEY REGISTERED — USE PASSWORD');
+      }
+    }
+  }
+
+  async function registerPasskey() {
+    if (!window.PublicKeyCredential) {
+      toast('NOT SUPPORTED', 'Your browser does not support passkeys', 'hot');
+      return;
+    }
+    try {
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const userId    = crypto.getRandomValues(new Uint8Array(16));
+      await navigator.credentials.create({
+        publicKey: {
+          challenge,
+          rp: { name: 'DEMAND RADAR', id: location.hostname || 'localhost' },
+          user: { id: userId, name: 'owner', displayName: 'Platform Owner' },
+          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+          authenticatorSelection: { userVerification: 'required' },
+          timeout: 60000,
+        }
+      });
+      document.getElementById('ap-passkey-status').textContent = 'REGISTERED';
+      document.getElementById('ap-passkey-status').style.cssText = 'border-color:var(--lime);color:var(--lime);';
+      logEvent('success', 'Passkey registered');
+      toast('PASSKEY REGISTERED', 'Biometric authentication enabled', 'lime');
+    } catch(e) {
+      toast('REGISTRATION FAILED', e.message || 'Passkey setup cancelled', 'hot');
+    }
+  }
+
+  // ── SESSION WATCHER ──
+  let sessionInterval = null;
+  let heartbeatInterval = null;
+  let sessionAgeInterval = null;
+
+  function startSessionWatcher() {
+    clearInterval(sessionInterval);
+    sessionInterval = setInterval(() => {
+      if (!isAuthenticated()) {
+        clearInterval(sessionInterval);
+        clearInterval(heartbeatInterval);
+        clearInterval(sessionAgeInterval);
+        showLockscreen(true);
+      }
+    }, 10000); // check every 10s
+
+    // Session age display
+    clearInterval(sessionAgeInterval);
+    sessionAgeInterval = setInterval(() => {
+      const sess = getSession();
+      if (!sess) return;
+      const ageMs = Date.now() - sess.loginTime;
+      const mins = Math.floor(ageMs / 60000);
+      const secs = Math.floor((ageMs % 60000) / 1000);
+      const el = document.getElementById('ap-session-age');
+      if (el) el.textContent = `Active ${mins}m ${secs}s`;
+    }, 1000);
+  }
+
+  function startActivityHeartbeat() {
+    // Reset idle timer on any user interaction
+    ['mousemove','keydown','click','scroll','touchstart'].forEach(ev => {
+      document.addEventListener(ev, () => {
+        const sess = getSession();
+        if (sess) setSession(sess); // refreshes lastActive
+      }, { passive: true });
+    });
+  }
+
+  // ── LOGOUT ──
+  function logout() {
+    logEvent('info', 'Manual sign out');
+    clearSession();
+    closePanel();
+    showLockscreen();
+  }
+
+  // ── SESSION TIMEOUT ──
+  function setSessionTimeout(mins) {
+    const cfg = loadConfig();
+    cfg.sessionTimeout = mins;
+    saveConfig(cfg);
+    const sess = getSession();
+    if (sess) setSession(sess);
+    toast('TIMEOUT SET', mins === 0 ? 'Session will never expire' : `Auto-lock after ${mins} minutes`, 'ice');
+  }
+
+  // ── CHANGE PASSWORD ──
+  function changePassword() {
+    const cfg = loadConfig();
+    const oldP = document.getElementById('ap-old-pass').value;
+    const newP = document.getElementById('ap-new-pass').value;
+    const newP2 = document.getElementById('ap-new-pass2').value;
+    if (!checkHash(oldP, cfg.passwordHash)) { toast('WRONG CURRENT KEY', 'Old access key is incorrect', 'hot'); return; }
+    if (newP.length < 8) { toast('TOO SHORT', 'New key must be at least 8 characters', 'hot'); return; }
+    if (newP !== newP2) { toast('MISMATCH', 'New keys do not match', 'hot'); return; }
+    cfg.passwordHash = simpleHash(newP);
+    saveConfig(cfg);
+    document.getElementById('ap-old-pass').value = '';
+    document.getElementById('ap-new-pass').value = '';
+    document.getElementById('ap-new-pass2').value = '';
+    logEvent('success', 'Access key updated');
+    toast('ACCESS KEY UPDATED', 'New key is active immediately', 'lime');
+  }
+
+  function checkStrength(pwd) {
+    const bar = document.getElementById('ap-pwd-strength');
+    const lbl = document.getElementById('ap-pwd-label');
+    if (!bar) return;
+    let score = 0;
+    if (pwd.length >= 8) score++;
+    if (pwd.length >= 12) score++;
+    if (/[A-Z]/.test(pwd)) score++;
+    if (/[0-9]/.test(pwd)) score++;
+    if (/[^A-Za-z0-9]/.test(pwd)) score++;
+    const levels = [
+      { w: '20%', c: '#ff3500', l: 'VERY WEAK' },
+      { w: '40%', c: '#ff6030', l: 'WEAK' },
+      { w: '60%', c: '#ffcc00', l: 'MODERATE' },
+      { w: '80%', c: '#a8ff00', l: 'STRONG' },
+      { w: '100%', c: '#00ccff', l: 'VERY STRONG' },
+    ];
+    const lv = levels[Math.max(0, score - 1)] || levels[0];
+    bar.style.width = lv.w;
+    bar.style.background = lv.c;
+    lbl.textContent = lv.l;
+    lbl.style.color = lv.c;
+  }
+
+  // ── 2FA SETUP ──
+  function setup2FA() {
+    const secret = genTOTPSecret();
+    const cfg = loadConfig();
+    cfg.totpSecret = secret;
+    cfg.twoFA = true;
+    saveConfig(cfg);
+    document.getElementById('ap-totp-secret').textContent = secret;
+    document.getElementById('ap-2fa-status').textContent = 'ENABLED';
+    document.getElementById('ap-2fa-status').style.cssText = 'border-color:var(--lime);color:var(--lime);';
+    document.getElementById('ap-2fa-disable-btn').style.display = '';
+    logEvent('success', '2FA TOTP enabled');
+    toast('2FA ENABLED', 'Add the secret key to your authenticator app', 'lime');
+  }
+
+  function disable2FA() {
+    const cfg = loadConfig();
+    cfg.twoFA = false;
+    cfg.totpSecret = null;
+    saveConfig(cfg);
+    document.getElementById('ap-2fa-status').textContent = 'DISABLED';
+    document.getElementById('ap-2fa-status').style.cssText = 'border-color:#3d5a7a;color:#3d5a7a;';
+    document.getElementById('ap-2fa-disable-btn').style.display = 'none';
+    document.getElementById('ap-totp-secret').textContent = 'CLICK SETUP TO GENERATE';
+    logEvent('info', '2FA TOTP disabled');
+    toast('2FA DISABLED', '2-factor authentication turned off', 'gold');
+  }
+
+  // ── IP ALLOWLIST ──
+  function toggleIPLock(btn) {
+    btn.classList.toggle('on');
+    const cfg = loadConfig();
+    cfg.ipLock = btn.classList.contains('on');
+    saveConfig(cfg);
+    toast(cfg.ipLock ? 'IP LOCK ENABLED' : 'IP LOCK DISABLED', cfg.ipLock ? 'Only allowed IPs can authenticate' : 'IP restrictions removed', cfg.ipLock ? 'lime' : 'gold');
+  }
+
+  function addIP() {
+    const ip = document.getElementById('ap-ip-input').value.trim();
+    if (!ip) return;
+    const cfg = loadConfig();
+    if (!cfg.allowedIPs.includes(ip)) {
+      cfg.allowedIPs.push(ip);
+      saveConfig(cfg);
+      renderIPs();
+      document.getElementById('ap-ip-input').value = '';
+      toast('IP ADDED', ip + ' added to allowlist', 'lime');
+    }
+  }
+
+  function removeIP(ip) {
+    const cfg = loadConfig();
+    cfg.allowedIPs = cfg.allowedIPs.filter(x => x !== ip);
+    saveConfig(cfg);
+    renderIPs();
+  }
+
+  function renderIPs() {
+    const cfg = loadConfig();
+    const el = document.getElementById('ap-ip-list');
+    if (!el) return;
+    el.innerHTML = cfg.allowedIPs.map(ip => `
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#0b1122;border:1px solid #192338;font-family:'IBM Plex Mono',monospace;font-size:.62rem;">
+        <span style="flex:1;color:#8ba8cc;">${ip}</span>
+        <button onclick="AUTH.removeIP('${ip}')" style="background:none;border:none;color:#3d5a7a;cursor:pointer;font-size:.75rem;transition:color .15s;" onmouseover="this.style.color='#ff2d8a'" onmouseout="this.style.color='#3d5a7a'">✕</button>
+      </div>`).join('') || '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:.58rem;color:#3d5a7a;">No IPs added. Add IPs to restrict access.</div>';
+  }
+
+  // ── USERS ──
+  function addUser() {
+    const name = document.getElementById('ap-invite-name').value.trim();
+    const key  = document.getElementById('ap-invite-key').value.trim();
+    if (!name || !key) return;
+    const cfg = loadConfig();
+    cfg.users.push({ name: name.toUpperCase(), role: 'viewer', color: '#00ccff', keyHash: simpleHash(key) });
+    saveConfig(cfg);
+    document.getElementById('ap-invite-name').value = '';
+    document.getElementById('ap-invite-key').value = '';
+    renderUsers();
+    logEvent('info', `User added: ${name}`);
+    toast('USER ADDED', name + ' can now access the platform', 'ice');
+  }
+
+  function removeUser(idx) {
+    const cfg = loadConfig();
+    if (cfg.users[idx]?.role === 'owner') { toast('CANNOT REMOVE', 'Cannot remove the owner account', 'hot'); return; }
+    const name = cfg.users[idx]?.name;
+    cfg.users.splice(idx, 1);
+    saveConfig(cfg);
+    renderUsers();
+    logEvent('info', `User removed: ${name}`);
+  }
+
+  function toggleUserBlock(idx) {
+    const cfg = loadConfig();
+    if (cfg.users[idx]?.role === 'owner') return;
+    cfg.users[idx].role = cfg.users[idx].role === 'blocked' ? 'viewer' : 'blocked';
+    saveConfig(cfg);
+    renderUsers();
+    logEvent('warn', `User ${cfg.users[idx].name} ${cfg.users[idx].role === 'blocked' ? 'blocked' : 'unblocked'}`);
+  }
+
+  function renderUsers() {
+    const cfg = loadConfig();
+    const el = document.getElementById('ap-user-list');
+    if (!el) return;
+    el.innerHTML = cfg.users.map((u, i) => `
+      <div class="user-item">
+        <div class="user-avatar" style="background:${u.color};">${u.name[0]}</div>
+        <div class="user-name">${u.name}</div>
+        <span class="user-role role-${u.role}">${u.role.toUpperCase()}</span>
+        ${u.role !== 'owner' ? `
+          <button onclick="AUTH.toggleUserBlock(${i})" style="background:none;border:1px solid #1f2d48;color:#3d5a7a;font-family:'IBM Plex Mono',monospace;font-size:.5rem;padding:2px 6px;cursor:pointer;letter-spacing:1px;" title="${u.role==='blocked'?'Unblock':'Block'}">${u.role==='blocked'?'UNBLOCK':'BLOCK'}</button>
+          <button onclick="AUTH.removeUser(${i})" style="background:none;border:none;color:#3d5a7a;cursor:pointer;font-size:.75rem;" title="Remove">✕</button>` : ''}
+      </div>`).join('');
+  }
+
+  // ── SESSIONS ──
+  function renderSessions() {
+    const el = document.getElementById('ap-session-list');
+    if (!el) return;
+    const sess = getSession();
+    const items = sess ? [
+      { device: sess.device || 'Current browser', time: new Date(sess.loginTime).toISOString().slice(11,19), current: true }
+    ] : [];
+    el.innerHTML = items.length ? items.map((s, i) => `
+      <div class="session-item ${s.current ? 'current' : ''}">
+        <span style="font-size:.7rem;">${s.current ? '💻' : '📱'}</span>
+        <span class="session-device">${s.device.slice(0,45)}…</span>
+        <span class="session-time">${s.time}</span>
+        ${s.current ? '<span style="color:#a8ff00;font-size:.55rem;">CURRENT</span>' : `<button class="session-kill" onclick="AUTH.killSession(${i})">✕</button>`}
+      </div>`).join('') : '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:.58rem;color:#3d5a7a;padding:8px 0;">No active sessions.</div>';
+  }
+
+  function killAllSessions() {
+    clearSession();
+    logEvent('warn', 'All sessions terminated');
+    toast('SESSIONS KILLED', 'All other sessions terminated', 'gold');
+    renderSessions();
+  }
+
+  // ── DECOY ──
+  function toggleDecoy(btn) {
+    btn.classList.toggle('on');
+    const on = btn.classList.contains('on');
+    document.getElementById('ap-decoy-input-row').style.display = on ? '' : 'none';
+    if (!on) {
+      const cfg = loadConfig();
+      cfg.decoyEnabled = false;
+      cfg.decoyHash = null;
+      saveConfig(cfg);
+    } else {
+      toast('DECOY MODE', 'Set a decoy key below — logins with it are silently logged', 'gold');
+    }
+    document.getElementById('ap-decoy-pass').oninput = () => {
+      const v = document.getElementById('ap-decoy-pass').value;
+      const cfg = loadConfig();
+      cfg.decoyEnabled = true;
+      cfg.decoyHash = v ? simpleHash(v) : null;
+      saveConfig(cfg);
+    };
+  }
+
+  // ── CLIPBOARD BLOCK ──
+  function toggleClipboard(btn) {
+    btn.classList.toggle('on');
+    const on = btn.classList.contains('on');
+    const cfg = loadConfig();
+    cfg.clipboardBlock = on;
+    saveConfig(cfg);
+    if (on) {
+      document.addEventListener('copy', blockClipboard);
+      document.addEventListener('cut', blockClipboard);
+      toast('CLIPBOARD BLOCKED', 'Copy/cut from this page is disabled', 'lime');
+    } else {
+      document.removeEventListener('copy', blockClipboard);
+      document.removeEventListener('cut', blockClipboard);
+      toast('CLIPBOARD ALLOWED', 'Copy/cut re-enabled', 'gold');
+    }
+  }
+  function blockClipboard(e) { e.preventDefault(); }
+
+  // ── DEVTOOLS DETECTION ──
+  function startDevtoolsDetect() {
+    let threshold = 160;
+    setInterval(() => {
+      const cfg = loadConfig();
+      if (!cfg.devtoolsDetect) return;
+      if (!isAuthenticated()) return;
+      if ((window.outerWidth - window.innerWidth > threshold) || (window.outerHeight - window.innerHeight > threshold)) {
+        logEvent('warn', 'Browser devtools detected');
+      }
+    }, 3000);
+  }
+
+  // ── AUTH LOG ──
+  function renderLog() {
+    const el = document.getElementById('ap-auth-log');
+    if (!el) return;
+    const l = loadLog();
+    if (!l.length) { el.innerHTML = '<div style="font-family:\'IBM Plex Mono\',monospace;font-size:.58rem;color:#3d5a7a;padding:8px 0;">No log entries.</div>'; return; }
+    el.innerHTML = l.map(e => `
+      <div class="log-item">
+        <span class="log-time">${e.time}</span>
+        <span class="log-event log-${e.type}">${e.type === 'success' ? '✓' : e.type === 'fail' ? '✗' : e.type === 'warn' ? '⚠' : 'ℹ'} ${e.msg}</span>
+      </div>`).join('');
+  }
+
+  function clearLog() {
+    saveLog([]);
+    renderLog();
+    toast('LOG CLEARED', 'Auth log has been wiped', 'ice');
+  }
+
+  // ── PANIC WIPE ──
+  function panicWipe() {
+    if (!confirm('PANIC WIPE: This will destroy all session data and lock the platform immediately. Are you absolutely sure?')) return;
+    // Clear everything
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('dr_'));
+    keys.forEach(k => localStorage.removeItem(k));
+    sessionStorage.clear();
+    logEvent('warn', 'PANIC WIPE executed — all data destroyed');
+    toast('PANIC WIPE COMPLETE', 'All data destroyed. Locking now.', 'hot');
+    setTimeout(() => { location.reload(); }, 1500);
+  }
+
+  // ── PANEL ──
+  function openPanel() {
+    document.getElementById('accessPanel').classList.add('open');
+    const cfg = loadConfig();
+    // Sync toggles
+    syncToggle('ap-ip-toggle', cfg.ipLock);
+    syncToggle('ap-decoy-toggle', cfg.decoyEnabled);
+    syncToggle('ap-clip-toggle', cfg.clipboardBlock);
+    // Sync selects
+    document.getElementById('ap-timeout-sel').value = cfg.sessionTimeout;
+    document.getElementById('ap-max-att').value = cfg.maxAttempts;
+    document.getElementById('ap-lockout-dur').value = cfg.lockoutDuration;
+    // 2FA status
+    if (cfg.twoFA && cfg.totpSecret) {
+      document.getElementById('ap-2fa-status').textContent = 'ENABLED';
+      document.getElementById('ap-2fa-status').style.cssText = 'border-color:#a8ff00;color:#a8ff00;';
+      document.getElementById('ap-totp-secret').textContent = cfg.totpSecret;
+      document.getElementById('ap-2fa-disable-btn').style.display = '';
+    }
+    // Detect IP
+    fetch('https://api.ipify.org?format=json').then(r => r.json()).then(d => {
+      const el = document.getElementById('ap-current-ip');
+      if (el) el.textContent = 'Your IP: ' + d.ip;
+    }).catch(() => {});
+    renderIPs();
+    renderUsers();
+    renderSessions();
+    renderLog();
+  }
+
+  function closePanel() {
+    document.getElementById('accessPanel').classList.remove('open');
+  }
+
+  function syncToggle(id, on) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (on) el.classList.add('on'); else el.classList.remove('on');
+  }
+
+  // ── INIT ──
+  function init() {
+    // Wrap app content
+    const appContent = document.getElementById('appContent');
+    // Show lock screen first
+    showLockscreen();
+    startDevtoolsDetect();
+    // Apply clipboard block if configured
+    const cfg = loadConfig();
+    if (cfg.clipboardBlock) {
+      document.addEventListener('copy', blockClipboard);
+      document.addEventListener('cut', blockClipboard);
+    }
+  }
+
+  return {
+    init, attempt, verifyTOTP, passkeyLogin, registerPasskey,
+    logout, openPanel, closePanel,
+    setSessionTimeout, changePassword, checkStrength,
+    setup2FA, disable2FA,
+    toggleIPLock, addIP, removeIP,
+    addUser, removeUser, toggleUserBlock,
+    killAllSessions,
+    toggleDecoy, toggleClipboard,
+    clearLog, panicWipe,
+  };
+})();
+</script>
+
+<!-- Wrap all app UI in a div for show/hide -->
+<script>
+// Wrap existing app body in #appContent after DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+  // Create wrapper
+  const wrapper = document.createElement('div');
+  wrapper.id = 'appContent';
+  wrapper.style.cssText = 'display:none;flex-direction:column;height:100vh;overflow:hidden;flex:1;';
+
+  // Move all body children except lockscreen, accessPanel, modals, toasts into wrapper
+  const children = Array.from(document.body.children);
+  children.forEach(el => {
+    if (!['lockscreen','accessPanel','shortcutsModal','platModal'].includes(el.id) &&
+        !el.classList.contains('toasts') && !el.classList.contains('modal-ov')) {
+      wrapper.appendChild(el);
+    }
+  });
+  document.body.insertBefore(wrapper, document.getElementById('accessPanel'));
+
+  // Add 🔐 button to header
+  const hdrRight = wrapper.querySelector('.hdr-right');
+  if (hdrRight) {
+    const lockBtn = document.createElement('button');
+    lockBtn.className = 'icon-btn';
+    lockBtn.title = 'Access Control (🔐)';
+    lockBtn.innerHTML = '🔐';
+    lockBtn.onclick = () => AUTH.openPanel();
+    hdrRight.prepend(lockBtn);
+  }
+});
+</script>
+</body>
+</html>
+
